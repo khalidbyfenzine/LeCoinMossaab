@@ -85,7 +85,7 @@ export default function Dashboard({
             />
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 100, overflowX: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 150, overflowX: 'auto', overflowY: 'hidden' }}>
           {dailyBars.map((d, i) => (
             <div
               key={d.label + i}
