@@ -13,10 +13,6 @@ import TablesAdmin from './components/admin/TablesAdmin.jsx';
 import CategoriesAdmin from './components/admin/CategoriesAdmin.jsx';
 import StaffAdmin from './components/admin/StaffAdmin.jsx';
 
-const HOUR_BUCKETS = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((h) => ({
-  h,
-  label: `${h}h`,
-}));
 const TAX_RATE = 0.0825;
 
 function todayLabel() {
@@ -27,6 +23,11 @@ function isToday(dateLike) {
   const d = new Date(dateLike);
   const now = new Date();
   return d.toDateString() === now.toDateString();
+}
+
+function currentMonthValue() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
   const [category, setCategory] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
   const [cart, setCart] = useState([]);
+  const [dashboardMonth, setDashboardMonth] = useState(currentMonthValue);
 
   useEffect(() => {
     async function load() {
@@ -351,16 +353,24 @@ export default function App() {
     };
   }, [todaysOrders]);
 
-  const hourlyBars = useMemo(() => {
-    const sums = HOUR_BUCKETS.map((b) => {
-      const total = todaysOrders
-        .filter((o) => new Date(o.created_at).getHours() === b.h)
-        .reduce((sum, o) => sum + o.items.reduce((s, it) => s + it.price * it.qty, 0), 0);
-      return { ...b, total };
-    });
+  const dailyBars = useMemo(() => {
+    const [yearStr, monthStr] = dashboardMonth.split('-');
+    const year = Number(yearStr);
+    const month = Number(monthStr) - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const sums = Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, total: 0 }));
+
+    for (const o of orders) {
+      const d = new Date(o.created_at);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        const total = o.items.reduce((sum, it) => sum + it.price * it.qty, 0);
+        sums[d.getDate() - 1].total += total;
+      }
+    }
+
     const max = Math.max(1, ...sums.map((s) => s.total));
-    return sums.map((s) => ({ label: s.label, heightPx: Math.round((s.total / max) * 90) + 'px' }));
-  }, [todaysOrders]);
+    return sums.map((s) => ({ label: String(s.day), heightPx: Math.round((s.total / max) * 90) + 'px' }));
+  }, [orders, dashboardMonth]);
 
   const recentOrders = useMemo(
     () =>
@@ -449,7 +459,14 @@ export default function App() {
               <AdminNav adminSection={adminSection} onSelect={setAdminSection} />
               <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
                 {adminSection === 'dashboard' && (
-                  <Dashboard todayLabel={todayLabel()} stats={dashboardStats} hourlyBars={hourlyBars} recentOrders={recentOrders} />
+                  <Dashboard
+                    todayLabel={todayLabel()}
+                    stats={dashboardStats}
+                    dailyBars={dailyBars}
+                    dashboardMonth={dashboardMonth}
+                    onDashboardMonthChange={setDashboardMonth}
+                    recentOrders={recentOrders}
+                  />
                 )}
                 {adminSection === 'menu' && (
                   <MenuItemsAdmin
