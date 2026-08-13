@@ -1,0 +1,73 @@
+export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders }) {
+  return (
+    <div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Dashboard</div>
+      <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>{todayLabel}</div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 26 }}>
+        {[
+          { label: "Today's Sales", value: stats.salesDisplay },
+          { label: 'Orders', value: stats.ordersCount },
+          { label: 'Avg Ticket', value: stats.avgTicketDisplay },
+          { label: 'Covers', value: stats.covers },
+        ].map((tile) => (
+          <div
+            key={tile.label}
+            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 16 }}
+          >
+            <div style={{ fontSize: 12, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+              {tile.label}
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 600 }}>{tile.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '18px 20px', marginBottom: 26 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14 }}>Sales by Hour</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 100 }}>
+          {hourlyBars.map((h) => (
+            <div key={h.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: '100%', background: 'var(--color-accent)', borderRadius: '3px 3px 0 0', height: h.heightPx, opacity: 0.85 }} />
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-muted-3)' }}>{h.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Recent Orders</div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+        <thead>
+          <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--color-border-strong)' }}>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Table</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Server</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Items</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Total</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentOrders.map((o) => (
+            <tr key={o.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+              <td style={{ padding: '9px 10px', fontFamily: 'var(--font-mono)' }}>{o.table}</td>
+              <td style={{ padding: '9px 10px' }}>{o.server}</td>
+              <td style={{ padding: '9px 10px', color: 'var(--color-muted)' }}>{o.itemsLabel}</td>
+              <td style={{ padding: '9px 10px', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{o.totalDisplay}</td>
+              <td style={{ padding: '9px 10px' }}>
+                {o.paid ? (
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-success-text)', background: 'var(--color-success-bg)', padding: '3px 9px', borderRadius: 20 }}>
+                    Paid
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-accent)', background: 'var(--color-open-bg)', padding: '3px 9px', borderRadius: 20 }}>
+                    Open
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

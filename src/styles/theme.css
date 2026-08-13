@@ -1,0 +1,56 @@
+:root {
+  --color-bg: oklch(96% 0.012 75);
+  --color-text: oklch(22% 0.02 40);
+  --color-accent: #7a2e2e;
+  --color-dark: oklch(24% 0.02 40);
+  --color-dark-alt: oklch(18% 0.015 40);
+  --color-dark-border: oklch(38% 0.02 50);
+  --color-dark-text-dim: oklch(80% 0.01 60);
+  --color-dark-text-dimmer: oklch(85% 0.01 60);
+
+  --color-surface: oklch(99% 0.006 68);
+  --color-surface-alt: oklch(95% 0.008 68);
+  --color-surface-dim: oklch(93% 0.01 70);
+  --color-surface-muted: oklch(92% 0.015 72);
+  --color-border: oklch(87% 0.015 70);
+  --color-border-strong: oklch(85% 0.015 70);
+  --color-border-dashed: oklch(78% 0.015 65);
+  --color-avatar-bg: oklch(90% 0.015 70);
+
+  --color-muted: oklch(45% 0.02 50);
+  --color-muted-2: oklch(55% 0.015 55);
+  --color-muted-3: oklch(50% 0.02 50);
+  --color-strong: oklch(35% 0.02 45);
+
+  --color-success-text: oklch(45% 0.09 145);
+  --color-success-bg: oklch(92% 0.05 145);
+  --color-open-bg: oklch(93% 0.02 40);
+
+  --font-sans: 'Libre Franklin', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(80% 0.02 70);
+  border-radius: 4px;
+}
