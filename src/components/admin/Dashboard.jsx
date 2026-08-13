@@ -28,7 +28,7 @@ export default function Dashboard({
       <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Tableau de bord</div>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>{todayLabel}</div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 26 }}>
+      <div className="dashboard-tiles" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 26 }}>
         {[
           { label: 'Ventes du jour', value: stats.salesDisplay, mono: true },
           { label: 'Commandes', value: stats.ordersCount, mono: true },
@@ -123,7 +123,8 @@ export default function Dashboard({
       </div>
 
       <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Commandes récentes</div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+      <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', minWidth: 480, borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--color-border-strong)' }}>
             <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Table</th>
@@ -155,6 +156,7 @@ export default function Dashboard({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

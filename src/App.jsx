@@ -458,7 +458,7 @@ export default function App() {
           />
 
           {view === 'cashier' && (
-            <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+            <div className="cashier-body" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
               <CategorySidebar categories={categoryLabels} category={category} onSelectCategory={setCategory} />
               <MenuGrid items={filteredItems} onAdd={addToCart} />
               <OrderTicket
@@ -478,9 +478,9 @@ export default function App() {
           )}
 
           {view === 'admin' && currentUser?.login_role === 'admin' && (
-            <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+            <div className="admin-body" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
               <AdminNav adminSection={adminSection} onSelect={setAdminSection} />
-              <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
+              <div className="admin-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
                 {adminSection === 'dashboard' && (
                   <Dashboard
                     todayLabel={todayLabel()}

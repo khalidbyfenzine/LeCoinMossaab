@@ -54,6 +54,7 @@ export default function StaffAdmin({ staff, onToggleClock, onAdd, onUpdate, onDe
 
       <form
         onSubmit={submitAdd}
+        className="admin-form-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: '1.2fr 1fr 1fr 0.8fr auto',
@@ -111,6 +112,7 @@ export default function StaffAdmin({ staff, onToggleClock, onAdd, onUpdate, onDe
             <form
               key={s.id}
               onSubmit={submitEdit}
+              className="admin-form-grid"
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1.2fr 1fr 1fr 0.8fr auto auto',
@@ -163,6 +165,7 @@ export default function StaffAdmin({ staff, onToggleClock, onAdd, onUpdate, onDe
           ) : (
             <div
               key={s.id}
+              className="admin-list-row"
               style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '13px 16px' }}
             >
               <div

@@ -9,6 +9,7 @@ const NAV_ITEMS = [
 export default function AdminNav({ adminSection, onSelect }) {
   return (
     <div
+      className="admin-nav"
       style={{
         width: 200,
         flex: '0 0 auto',

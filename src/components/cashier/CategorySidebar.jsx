@@ -1,6 +1,7 @@
 export default function CategorySidebar({ categories, category, onSelectCategory }) {
   return (
     <div
+      className="category-sidebar"
       style={{
         width: 170,
         flex: '0 0 auto',

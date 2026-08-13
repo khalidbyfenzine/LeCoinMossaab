@@ -53,6 +53,7 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
 
       <form
         onSubmit={submitAdd}
+        className="admin-form-grid"
         style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 0.8fr auto', gap: 8, marginBottom: 26, alignItems: 'center' }}
       >
         <input

@@ -13,6 +13,7 @@ export default function TopBar({
 }) {
   return (
     <div
+      className="topbar"
       style={{
         height: 64,
         flex: '0 0 auto',

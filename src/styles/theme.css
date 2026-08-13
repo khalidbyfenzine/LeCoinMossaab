@@ -54,3 +54,75 @@ button {
   background: oklch(80% 0.02 70);
   border-radius: 4px;
 }
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Responsive layout for phones/small tablets. The components render most
+   layout properties as inline styles (to match the original design mock),
+   which always beat stylesheet rules regardless of media query — so
+   !important is needed here to actually override them at this breakpoint. */
+@media (max-width: 860px) {
+  .cashier-body {
+    flex-direction: column !important;
+    overflow-y: auto;
+  }
+
+  .category-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-border);
+    padding: 10px !important;
+  }
+
+  .order-ticket {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px dashed var(--color-border-dashed);
+  }
+
+  .admin-body {
+    flex-direction: column !important;
+  }
+
+  .admin-nav {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    padding: 10px 12px !important;
+  }
+
+  .admin-content {
+    padding: 16px !important;
+  }
+
+  .topbar {
+    height: auto !important;
+    flex-wrap: wrap;
+    padding: 10px 14px !important;
+    row-gap: 8px;
+  }
+
+  .dashboard-tiles {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-form-flex {
+    flex-wrap: wrap !important;
+  }
+
+  .admin-list-row {
+    flex-wrap: wrap !important;
+  }
+
+  .menu-grid-container {
+    padding: 12px !important;
+  }
+}

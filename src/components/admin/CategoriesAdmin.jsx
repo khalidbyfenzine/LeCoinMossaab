@@ -19,7 +19,7 @@ export default function CategoriesAdmin({ categories, onAdd, onRemove }) {
         menu.
       </div>
 
-      <form onSubmit={submitAdd} style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+      <form onSubmit={submitAdd} className="admin-form-flex" style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
         <input
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}

@@ -15,6 +15,7 @@ export default function OrderTicket({
 }) {
   return (
     <div
+      className="order-ticket"
       style={{
         width: 360,
         flex: '0 0 auto',

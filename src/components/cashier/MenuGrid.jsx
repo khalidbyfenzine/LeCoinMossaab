@@ -2,7 +2,7 @@ import { money } from '../../lib/format.js';
 
 export default function MenuGrid({ items, onAdd }) {
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+    <div className="menu-grid-container" style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
       <div
         style={{
           display: 'grid',
