@@ -9,10 +9,10 @@ import OrderTicket from './components/cashier/OrderTicket.jsx';
 import AdminNav from './components/admin/AdminNav.jsx';
 import Dashboard from './components/admin/Dashboard.jsx';
 import MenuItemsAdmin from './components/admin/MenuItemsAdmin.jsx';
+import TablesAdmin from './components/admin/TablesAdmin.jsx';
 import StaffAdmin from './components/admin/StaffAdmin.jsx';
 
 const CATEGORY_LIST = ['Entrées', 'Plats', 'Accompagnements', 'Boissons', 'Desserts'];
-const TABLES = ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Table 6', 'Table 7', 'Table 8', 'À Emporter'];
 const HOUR_BUCKETS = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((h) => ({
   h,
   label: `${h}h`,
@@ -36,6 +36,7 @@ export default function App() {
   const [staffList, setStaffList] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [tables, setTables] = useState([]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -47,24 +48,32 @@ export default function App() {
   const [view, setView] = useState('cashier');
   const [adminSection, setAdminSection] = useState('dashboard');
   const [category, setCategory] = useState(CATEGORY_LIST[0]);
-  const [selectedTable, setSelectedTable] = useState(TABLES[3]);
+  const [selectedTable, setSelectedTable] = useState(null);
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
     async function load() {
       try {
-        const [{ data: staffData, error: staffErr }, { data: menuData, error: menuErr }, { data: orderData, error: orderErr }] =
-          await Promise.all([
-            supabase.from('staff_public').select('*'),
-            supabase.from('menu_items').select('*'),
-            supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false }),
-          ]);
+        const [
+          { data: staffData, error: staffErr },
+          { data: menuData, error: menuErr },
+          { data: orderData, error: orderErr },
+          { data: tableData, error: tableErr },
+        ] = await Promise.all([
+          supabase.from('staff_public').select('*'),
+          supabase.from('menu_items').select('*'),
+          supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false }),
+          supabase.from('tables').select('*').order('id', { ascending: true }),
+        ]);
         if (staffErr) throw staffErr;
         if (menuErr) throw menuErr;
         if (orderErr) throw orderErr;
+        if (tableErr) throw tableErr;
 
         setStaffList(staffData ?? []);
         setMenuItems(menuData ?? []);
+        setTables(tableData ?? []);
+        setSelectedTable((tableData ?? [])[3]?.label ?? (tableData ?? [])[0]?.label ?? null);
         setOrders(
           (orderData ?? []).map((o) => ({
             id: o.id,
@@ -90,6 +99,13 @@ export default function App() {
     }
     load();
   }, []);
+
+  useEffect(() => {
+    if (tables.length === 0) return;
+    if (!tables.some((t) => t.label === selectedTable)) {
+      setSelectedTable(tables[0].label);
+    }
+  }, [tables, selectedTable]);
 
   const setLoginRoleAndReset = (role) => {
     setLoginRole(role);
@@ -163,7 +179,7 @@ export default function App() {
     setCart((prev) => prev.map((c) => (c.id === id ? { ...c, qty: c.qty - 1 } : c)).filter((c) => c.qty > 0));
 
   const sendToKitchen = async () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || !selectedTable) return;
     const { data: newOrder, error: orderErr } = await supabase
       .from('orders')
       .insert({ table_label: selectedTable, server_name: currentUser.name, status: 'open', covers: 1 })
@@ -208,6 +224,28 @@ export default function App() {
     await supabase.from('menu_items').update({ available: nextAvailable }).eq('id', id);
   };
 
+  const addMenuItem = async ({ name, category, price }) => {
+    const id = crypto.randomUUID();
+    const { data, error } = await supabase
+      .from('menu_items')
+      .insert({ id, name, category, price, available: true })
+      .select()
+      .single();
+    if (error) return;
+    setMenuItems((prev) => [...prev, data]);
+  };
+
+  const updateMenuItem = async (id, fields) => {
+    setMenuItems((prev) => prev.map((m) => (m.id === id ? { ...m, ...fields } : m)));
+    await supabase.from('menu_items').update(fields).eq('id', id);
+  };
+
+  const deleteMenuItem = async (id) => {
+    const { error } = await supabase.from('menu_items').delete().eq('id', id);
+    if (error) return;
+    setMenuItems((prev) => prev.filter((m) => m.id !== id));
+  };
+
   const toggleStaffClock = async (id) => {
     const person = staffList.find((s) => s.id === id);
     if (!person) return;
@@ -216,15 +254,51 @@ export default function App() {
     await supabase.rpc('set_staff_clocked_in', { p_staff_id: id, p_clocked_in: nextClockedIn });
   };
 
+  const addStaff = async ({ name, role, login_role, pin }) => {
+    const id = crypto.randomUUID();
+    const { error } = await supabase.from('staff').insert({ id, name, role, login_role, pin, clocked_in: false });
+    if (error) return;
+    setStaffList((prev) => [...prev, { id, name, role, login_role, clocked_in: false }]);
+  };
+
+  const updateStaff = async (id, fields) => {
+    const { pin, ...displayFields } = fields;
+    setStaffList((prev) => prev.map((s) => (s.id === id ? { ...s, ...displayFields } : s)));
+    await supabase.from('staff').update(fields).eq('id', id);
+  };
+
+  const deleteStaff = async (id) => {
+    const { error } = await supabase.from('staff').delete().eq('id', id);
+    if (error) return;
+    setStaffList((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const addTable = async (label) => {
+    const { data, error } = await supabase.from('tables').insert({ label }).select().single();
+    if (error) return;
+    setTables((prev) => [...prev, data]);
+  };
+
+  const removeTable = async (id) => {
+    const { error } = await supabase.from('tables').delete().eq('id', id);
+    if (error) return;
+    setTables((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const filteredItems = useMemo(() => menuItems.filter((m) => m.category === category), [menuItems, category]);
 
   const subtotal = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.qty, 0), [cart]);
   const tax = subtotal * TAX_RATE;
   const total = subtotal + tax;
 
-  const tableOrders = useMemo(() => orders.filter((o) => o.table_label === selectedTable), [orders, selectedTable]);
-
   const todaysOrders = useMemo(() => orders.filter((o) => isToday(o.created_at)), [orders]);
+
+  const tableOrders = useMemo(
+    () => todaysOrders.filter((o) => o.table_label === selectedTable),
+    [todaysOrders, selectedTable]
+  );
+
+  const tableLabels = useMemo(() => tables.map((t) => t.label), [tables]);
 
   const dashboardStats = useMemo(() => {
     const sales = todaysOrders.reduce((sum, o) => sum + o.items.reduce((s, it) => s + it.price * it.qty, 0), 0);
@@ -304,7 +378,7 @@ export default function App() {
             onGoAdmin={() => setView('admin')}
             isCashier={view === 'cashier'}
             canAccessAdmin={currentUser?.login_role === 'admin'}
-            tables={TABLES}
+            tables={tableLabels}
             selectedTable={selectedTable}
             onSelectTable={setSelectedTable}
             todayLabel={todayLabel()}
@@ -338,8 +412,26 @@ export default function App() {
                 {adminSection === 'dashboard' && (
                   <Dashboard todayLabel={todayLabel()} stats={dashboardStats} hourlyBars={hourlyBars} recentOrders={recentOrders} />
                 )}
-                {adminSection === 'menu' && <MenuItemsAdmin items={menuItems} onToggle={toggleAvailable} />}
-                {adminSection === 'staff' && <StaffAdmin staff={staffList} onToggle={toggleStaffClock} />}
+                {adminSection === 'menu' && (
+                  <MenuItemsAdmin
+                    items={menuItems}
+                    categories={CATEGORY_LIST}
+                    onToggle={toggleAvailable}
+                    onAdd={addMenuItem}
+                    onUpdate={updateMenuItem}
+                    onDelete={deleteMenuItem}
+                  />
+                )}
+                {adminSection === 'tables' && <TablesAdmin tables={tables} onAdd={addTable} onRemove={removeTable} />}
+                {adminSection === 'staff' && (
+                  <StaffAdmin
+                    staff={staffList}
+                    onToggleClock={toggleStaffClock}
+                    onAdd={addStaff}
+                    onUpdate={updateStaff}
+                    onDelete={deleteStaff}
+                  />
+                )}
               </div>
             </div>
           )}

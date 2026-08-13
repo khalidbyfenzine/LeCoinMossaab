@@ -1,5 +1,5 @@
 export function money(n) {
-  return Number(n).toFixed(2).replace('.', ',') + ' €';
+  return Number(n).toFixed(2).replace('.', ',') + ' MAD';
 }
 
 export function initials(name) {

@@ -27,10 +27,15 @@ create table if not exists orders (
   created_at timestamptz not null default now()
 );
 
+create table if not exists tables (
+  id bigint generated always as identity primary key,
+  label text not null unique
+);
+
 create table if not exists order_items (
   id bigint generated always as identity primary key,
   order_id bigint not null references orders (id) on delete cascade,
-  menu_item_id text references menu_items (id),
+  menu_item_id text references menu_items (id) on delete set null,
   name text not null,
   price numeric(10, 2) not null,
   qty int not null
@@ -66,12 +71,24 @@ alter table staff enable row level security;
 alter table menu_items enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
+alter table tables enable row level security;
 
--- No direct anon access to the staff table (pins live here) — only the view/RPC above.
+-- Staff writes are allowed (admin CRUD) but reads stay off-limits (pins live here) — only the view/RPC above can be read.
+drop policy if exists "staff insert" on staff;
+create policy "staff insert" on staff for insert with check (true);
+drop policy if exists "staff update" on staff;
+create policy "staff update" on staff for update using (true);
+drop policy if exists "staff delete" on staff;
+create policy "staff delete" on staff for delete using (true);
+
 drop policy if exists "menu_items read" on menu_items;
 create policy "menu_items read" on menu_items for select using (true);
 drop policy if exists "menu_items write" on menu_items;
-create policy "menu_items write" on menu_items for update using (true);
+create policy "menu_items write" on menu_items for insert with check (true);
+drop policy if exists "menu_items update" on menu_items;
+create policy "menu_items update" on menu_items for update using (true);
+drop policy if exists "menu_items delete" on menu_items;
+create policy "menu_items delete" on menu_items for delete using (true);
 
 drop policy if exists "orders read" on orders;
 create policy "orders read" on orders for select using (true);
@@ -89,12 +106,21 @@ create policy "order_items write" on order_items for insert with check (true);
 drop policy if exists "order_items delete" on order_items;
 create policy "order_items delete" on order_items for delete using (true);
 
+drop policy if exists "tables read" on tables;
+create policy "tables read" on tables for select using (true);
+drop policy if exists "tables write" on tables;
+create policy "tables write" on tables for insert with check (true);
+drop policy if exists "tables delete" on tables;
+create policy "tables delete" on tables for delete using (true);
+
 grant select on staff_public to anon, authenticated;
 grant execute on function check_staff_pin(text, text) to anon, authenticated;
 grant execute on function set_staff_clocked_in(text, boolean) to anon, authenticated;
-grant select, update on menu_items to anon, authenticated;
+grant insert, update, delete on staff to anon, authenticated;
+grant select, insert, update, delete on menu_items to anon, authenticated;
 grant select, insert, update, delete on orders to anon, authenticated;
 grant select, insert, delete on order_items to anon, authenticated;
+grant select, insert, delete on tables to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
 -- Seed data (matches the "Ember & Oak" design mock)
@@ -103,6 +129,11 @@ insert into staff (id, name, role, login_role, pin, clocked_in) values
   ('cash1', 'Caissier', 'Serveur', 'cashier', '1234', true),
   ('admin1', 'Admin', 'Gérant', 'admin', '9999', true)
 on conflict (id) do nothing;
+
+insert into tables (label) values
+  ('Table 1'), ('Table 2'), ('Table 3'), ('Table 4'),
+  ('Table 5'), ('Table 6'), ('Table 7'), ('Table 8'), ('À Emporter')
+on conflict (label) do nothing;
 
 insert into menu_items (id, name, category, price, available) values
   ('i1', 'Salade de betteraves rôties', 'Entrées', 12, true),
