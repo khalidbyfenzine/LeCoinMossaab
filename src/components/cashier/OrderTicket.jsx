@@ -37,12 +37,12 @@ export default function OrderTicket({
       >
         {selectedTable}
       </div>
-      <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Order Ticket</div>
+      <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Ticket de commande</div>
 
       <div style={{ flex: '1 1 140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, minHeight: 60 }}>
         {cart.length === 0 && (
           <div style={{ color: 'var(--color-muted-2)', fontSize: 13, padding: '24px 0', textAlign: 'center' }}>
-            No items yet — tap a menu item to add it.
+            Aucun article pour l'instant — touchez un article du menu pour l'ajouter.
           </div>
         )}
         {cart.map((ln) => (
@@ -73,11 +73,11 @@ export default function OrderTicket({
 
       <div style={{ borderTop: '1px dashed var(--color-border-dashed)', marginTop: 12, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 5, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-muted)' }}>
-          <span>Subtotal</span>
+          <span>Sous-total</span>
           <span>{money(subtotal)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-muted)' }}>
-          <span>Tax</span>
+          <span>Taxe</span>
           <span>{money(tax)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17, fontWeight: 700, color: 'var(--color-text)', marginTop: 4 }}>
@@ -91,20 +91,20 @@ export default function OrderTicket({
           onClick={onSendToKitchen}
           style={{ flex: 1, padding: 13, borderRadius: 7, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
         >
-          Send to Kitchen
+          Envoyer en cuisine
         </button>
       </div>
 
       <div style={{ borderTop: '1px dashed var(--color-border-dashed)', marginTop: 14, paddingTop: 12, display: 'flex', flexDirection: 'column', minHeight: 0, flex: '1 1 130px' }}>
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Sent Orders — {selectedTable}</div>
+        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Commandes envoyées — {selectedTable}</div>
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {tableOrders.length === 0 && (
-            <div style={{ color: 'var(--color-muted-2)', fontSize: 12.5, padding: '10px 0' }}>No orders sent for this table yet.</div>
+            <div style={{ color: 'var(--color-muted-2)', fontSize: 12.5, padding: '10px 0' }}>Aucune commande envoyée pour cette table.</div>
           )}
           {tableOrders.map((ord) => {
             const itemCount = ord.items.reduce((sum, it) => sum + it.qty, 0);
             const orderTotal = ord.items.reduce((sum, it) => sum + it.price * it.qty, 0);
-            const summary = `${itemCount} item${itemCount === 1 ? '' : 's'} — ${ord.items.map((it) => it.name).join(', ')}`;
+            const summary = `${itemCount} article${itemCount === 1 ? '' : 's'} — ${ord.items.map((it) => it.name).join(', ')}`;
             return (
               <div
                 key={ord.id}
@@ -120,7 +120,7 @@ export default function OrderTicket({
                   onClick={() => onEditOrder(ord.id)}
                   style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-accent)', background: 'transparent', color: 'var(--color-accent)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
                 >
-                  Edit
+                  Modifier
                 </button>
               </div>
             );

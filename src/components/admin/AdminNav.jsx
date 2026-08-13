@@ -1,7 +1,7 @@
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'menu', label: 'Menu Items' },
-  { id: 'staff', label: 'Staff' },
+  { id: 'dashboard', label: 'Tableau de bord' },
+  { id: 'menu', label: 'Articles du menu' },
+  { id: 'staff', label: 'Personnel' },
 ];
 
 export default function AdminNav({ adminSection, onSelect }) {

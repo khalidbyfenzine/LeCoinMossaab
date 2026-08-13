@@ -1,5 +1,5 @@
 export function money(n) {
-  return '$' + Number(n).toFixed(2);
+  return Number(n).toFixed(2).replace('.', ',') + ' €';
 }
 
 export function initials(name) {
@@ -10,5 +10,5 @@ export function initials(name) {
 }
 
 export function timeLabel(dateLike) {
-  return new Date(dateLike).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return new Date(dateLike).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }

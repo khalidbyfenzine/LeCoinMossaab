@@ -100,29 +100,29 @@ grant usage, select on all sequences in schema public to anon, authenticated;
 -- Seed data (matches the "Ember & Oak" design mock)
 
 insert into staff (id, name, role, login_role, pin, clocked_in) values
-  ('cash1', 'Cashier', 'Server', 'cashier', '1234', true),
-  ('admin1', 'Admin', 'Manager', 'admin', '9999', true)
+  ('cash1', 'Caissier', 'Serveur', 'cashier', '1234', true),
+  ('admin1', 'Admin', 'Gérant', 'admin', '9999', true)
 on conflict (id) do nothing;
 
 insert into menu_items (id, name, category, price, available) values
-  ('i1', 'Roasted Beet Salad', 'Starters', 12, true),
-  ('i2', 'French Onion Soup', 'Starters', 10, true),
-  ('i3', 'Charred Octopus', 'Starters', 18, true),
-  ('i4', 'Burrata Board', 'Starters', 15, false),
-  ('i5', 'Braised Short Rib', 'Mains', 32, true),
-  ('i6', 'Roast Chicken', 'Mains', 26, true),
-  ('i7', 'Pan-Seared Salmon', 'Mains', 29, true),
-  ('i8', 'Wild Mushroom Risotto', 'Mains', 24, true),
-  ('i9', 'Grass-Fed Burger', 'Mains', 19, true),
-  ('i10', 'Truffle Fries', 'Sides', 9, true),
-  ('i11', 'Grilled Asparagus', 'Sides', 8, true),
-  ('i12', 'Mac & Cheese', 'Sides', 8, true),
-  ('i13', 'House Red', 'Drinks', 12, true),
-  ('i14', 'House White', 'Drinks', 12, true),
-  ('i15', 'Draft Lager', 'Drinks', 7, true),
-  ('i16', 'Espresso', 'Drinks', 4, true),
-  ('i17', 'Sparkling Water', 'Drinks', 5, true),
-  ('i18', 'Chocolate Torte', 'Desserts', 11, true),
-  ('i19', 'Crème Brûlée', 'Desserts', 10, true),
+  ('i1', 'Salade de betteraves rôties', 'Entrées', 12, true),
+  ('i2', 'Soupe à l''oignon', 'Entrées', 10, true),
+  ('i3', 'Poulpe grillé', 'Entrées', 18, true),
+  ('i4', 'Plateau de burrata', 'Entrées', 15, false),
+  ('i5', 'Joue de bœuf braisée', 'Plats', 32, true),
+  ('i6', 'Poulet rôti', 'Plats', 26, true),
+  ('i7', 'Saumon poêlé', 'Plats', 29, true),
+  ('i8', 'Risotto aux champignons', 'Plats', 24, true),
+  ('i9', 'Burger au bœuf fermier', 'Plats', 19, true),
+  ('i10', 'Frites à la truffe', 'Accompagnements', 9, true),
+  ('i11', 'Asperges grillées', 'Accompagnements', 8, true),
+  ('i12', 'Macaronis au fromage', 'Accompagnements', 8, true),
+  ('i13', 'Vin rouge maison', 'Boissons', 12, true),
+  ('i14', 'Vin blanc maison', 'Boissons', 12, true),
+  ('i15', 'Bière pression', 'Boissons', 7, true),
+  ('i16', 'Espresso', 'Boissons', 4, true),
+  ('i17', 'Eau pétillante', 'Boissons', 5, true),
+  ('i18', 'Tarte au chocolat', 'Desserts', 11, true),
+  ('i19', 'Crème brûlée', 'Desserts', 10, true),
   ('i20', 'Affogato', 'Desserts', 8, false)
 on conflict (id) do nothing;

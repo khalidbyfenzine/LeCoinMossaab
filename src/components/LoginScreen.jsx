@@ -46,7 +46,7 @@ export default function LoginScreen({
           E
         </div>
         <div style={{ fontWeight: 700, fontSize: 20 }}>Ember &amp; Oak</div>
-        <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>Staff Login</div>
+        <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>Connexion du personnel</div>
       </div>
 
       <div style={{ display: 'flex', gap: 6, background: 'var(--color-dark)', padding: 4, borderRadius: 8 }}>
@@ -65,7 +65,7 @@ export default function LoginScreen({
               cursor: 'pointer',
             }}
           >
-            {role === 'cashier' ? 'Cashier' : 'Admin'}
+            {role === 'cashier' ? 'Caissier' : 'Administrateur'}
           </button>
         ))}
       </div>

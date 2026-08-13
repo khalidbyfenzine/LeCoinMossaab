@@ -113,7 +113,7 @@ export default function TopBar({
               cursor: 'pointer',
             }}
           >
-            Cashier
+            Caissier
           </button>
           <button
             onClick={onGoAdmin}
@@ -128,7 +128,7 @@ export default function TopBar({
               cursor: 'pointer',
             }}
           >
-            Admin
+            Administrateur
           </button>
         </div>
       )}
@@ -148,7 +148,7 @@ export default function TopBar({
             cursor: 'pointer',
           }}
         >
-          Log Out
+          Déconnexion
         </button>
       </div>
     </div>

@@ -3,9 +3,9 @@ import { money } from '../../lib/format.js';
 export default function MenuItemsAdmin({ items, onToggle }) {
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Menu Items</div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Articles du menu</div>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>
-        Toggle availability — changes apply to the cashier screen instantly.
+        Basculez la disponibilité — les changements s'appliquent instantanément à l'écran caissier.
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {items.map((m) => (

@@ -3,8 +3,8 @@ import { initials } from '../../lib/format.js';
 export default function StaffAdmin({ staff, onToggle }) {
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Staff</div>
-      <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>Today's floor roster.</div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Personnel</div>
+      <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>Équipe en service aujourd'hui.</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {staff.map((s) => (
           <div
@@ -22,18 +22,18 @@ export default function StaffAdmin({ staff, onToggle }) {
             </div>
             {s.clocked_in ? (
               <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-success-text)', background: 'var(--color-success-bg)', padding: '3px 9px', borderRadius: 20, marginRight: 6 }}>
-                Clocked In
+                Présent
               </span>
             ) : (
               <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-muted)', background: 'var(--color-surface-dim)', padding: '3px 9px', borderRadius: 20, marginRight: 6 }}>
-                Clocked Out
+                Absent
               </span>
             )}
             <button
               onClick={() => onToggle(s.id)}
               style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid oklch(75% 0.015 60)', background: 'transparent', fontSize: 12.5, fontWeight: 600, color: 'var(--color-strong)', cursor: 'pointer' }}
             >
-              Toggle
+              Basculer
             </button>
           </div>
         ))}

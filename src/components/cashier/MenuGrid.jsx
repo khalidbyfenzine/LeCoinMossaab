@@ -52,7 +52,7 @@ export default function MenuGrid({ items, onAdd }) {
             >
               <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.25 }}>{it.name}</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--color-muted)', fontWeight: 600, letterSpacing: 0.4 }}>
-                SOLD OUT
+                ÉPUISÉ
               </div>
             </div>
           )

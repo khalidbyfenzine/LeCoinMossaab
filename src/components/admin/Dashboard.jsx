@@ -1,15 +1,15 @@
 export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders }) {
   return (
     <div>
-      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Dashboard</div>
+      <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Tableau de bord</div>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>{todayLabel}</div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 26 }}>
         {[
-          { label: "Today's Sales", value: stats.salesDisplay },
-          { label: 'Orders', value: stats.ordersCount },
-          { label: 'Avg Ticket', value: stats.avgTicketDisplay },
-          { label: 'Covers', value: stats.covers },
+          { label: 'Ventes du jour', value: stats.salesDisplay },
+          { label: 'Commandes', value: stats.ordersCount },
+          { label: 'Ticket moyen', value: stats.avgTicketDisplay },
+          { label: 'Couverts', value: stats.covers },
         ].map((tile) => (
           <div
             key={tile.label}
@@ -24,7 +24,7 @@ export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders 
       </div>
 
       <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '18px 20px', marginBottom: 26 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14 }}>Sales by Hour</div>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 14 }}>Ventes par heure</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 100 }}>
           {hourlyBars.map((h) => (
             <div key={h.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -35,15 +35,15 @@ export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders 
         </div>
       </div>
 
-      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Recent Orders</div>
+      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Commandes récentes</div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--color-border-strong)' }}>
             <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Table</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Server</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Items</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Serveur</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Articles</th>
             <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Total</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Status</th>
+            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Statut</th>
           </tr>
         </thead>
         <tbody>
@@ -56,11 +56,11 @@ export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders 
               <td style={{ padding: '9px 10px' }}>
                 {o.paid ? (
                   <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-success-text)', background: 'var(--color-success-bg)', padding: '3px 9px', borderRadius: 20 }}>
-                    Paid
+                    Payé
                   </span>
                 ) : (
                   <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-accent)', background: 'var(--color-open-bg)', padding: '3px 9px', borderRadius: 20 }}>
-                    Open
+                    Ouverte
                   </span>
                 )}
               </td>

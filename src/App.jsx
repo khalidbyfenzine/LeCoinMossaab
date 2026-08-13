@@ -11,16 +11,16 @@ import Dashboard from './components/admin/Dashboard.jsx';
 import MenuItemsAdmin from './components/admin/MenuItemsAdmin.jsx';
 import StaffAdmin from './components/admin/StaffAdmin.jsx';
 
-const CATEGORY_LIST = ['Starters', 'Mains', 'Sides', 'Drinks', 'Desserts'];
-const TABLES = ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Table 6', 'Table 7', 'Table 8', 'Bar', 'To Go'];
+const CATEGORY_LIST = ['Entrées', 'Plats', 'Accompagnements', 'Boissons', 'Desserts'];
+const TABLES = ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Table 6', 'Table 7', 'Table 8', 'À Emporter'];
 const HOUR_BUCKETS = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((h) => ({
   h,
-  label: h === 12 ? '12p' : h > 12 ? `${h - 12}p` : `${h}a`,
+  label: `${h}h`,
 }));
 const TAX_RATE = 0.0825;
 
 function todayLabel() {
-  return new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  return new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 function isToday(dateLike) {
@@ -259,7 +259,7 @@ export default function App() {
           id: o.id,
           table: o.table_label,
           server: o.server_name,
-          itemsLabel: `${itemCount} items`,
+          itemsLabel: `${itemCount} article${itemCount === 1 ? '' : 's'}`,
           totalDisplay: money(orderTotal),
           paid: o.status === 'paid',
         };
@@ -268,13 +268,14 @@ export default function App() {
   );
 
   if (loading) {
-    return <div style={{ padding: 40, fontFamily: 'var(--font-sans)' }}>Loading…</div>;
+    return <div style={{ padding: 40, fontFamily: 'var(--font-sans)' }}>Chargement…</div>;
   }
 
   if (loadError) {
     return (
       <div style={{ padding: 40, fontFamily: 'var(--font-sans)', color: 'var(--color-accent)' }}>
-        Failed to load data: {loadError}. Check your Supabase URL/anon key in .env and that supabase/schema.sql has been run.
+        Échec du chargement des données : {loadError}. Vérifiez votre URL/clé Supabase dans .env et que
+        supabase/schema.sql a bien été exécuté.
       </div>
     );
   }

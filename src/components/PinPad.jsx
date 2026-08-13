@@ -29,7 +29,7 @@ export default function PinPad({ targetName, pinEntry, pinError, onDigit, onCanc
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
           <div style={{ fontWeight: 700, fontSize: 15 }}>{targetName}</div>
-          <div style={{ fontSize: 12.5, color: 'var(--color-muted)' }}>Enter your 4-digit code</div>
+          <div style={{ fontSize: 12.5, color: 'var(--color-muted)' }}>Entrez votre code à 4 chiffres</div>
         </div>
 
         <div style={{ display: 'flex', gap: 10 }}>
@@ -52,7 +52,7 @@ export default function PinPad({ targetName, pinEntry, pinError, onDigit, onCanc
 
         {pinError && (
           <div style={{ fontSize: 12, color: 'var(--color-accent)', fontWeight: 600 }}>
-            Incorrect code — try again.
+            Code incorrect — réessayez.
           </div>
         )}
 
@@ -73,7 +73,7 @@ export default function PinPad({ targetName, pinEntry, pinError, onDigit, onCanc
                 visibility: d === '' ? 'hidden' : 'visible',
               }}
             >
-              {d === 'clear' ? 'Clear' : d}
+              {d === 'clear' ? 'Effacer' : d}
             </button>
           ))}
         </div>
@@ -89,7 +89,7 @@ export default function PinPad({ targetName, pinEntry, pinError, onDigit, onCanc
             textDecoration: 'underline',
           }}
         >
-          Cancel
+          Annuler
         </button>
       </div>
     </div>
