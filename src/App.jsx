@@ -25,9 +25,18 @@ function isToday(dateLike) {
   return d.toDateString() === now.toDateString();
 }
 
-function currentMonthValue() {
+function toDateInputValue(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function firstDayOfMonthValue() {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return toDateInputValue(new Date(d.getFullYear(), d.getMonth(), 1));
+}
+
+function lastDayOfMonthValue() {
+  const d = new Date();
+  return toDateInputValue(new Date(d.getFullYear(), d.getMonth() + 1, 0));
 }
 
 export default function App() {
@@ -52,7 +61,8 @@ export default function App() {
   const [category, setCategory] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
   const [cart, setCart] = useState([]);
-  const [dashboardMonth, setDashboardMonth] = useState(currentMonthValue);
+  const [dashboardFrom, setDashboardFrom] = useState(firstDayOfMonthValue);
+  const [dashboardTo, setDashboardTo] = useState(lastDayOfMonthValue);
 
   useEffect(() => {
     async function load() {
@@ -354,23 +364,36 @@ export default function App() {
   }, [todaysOrders]);
 
   const dailyBars = useMemo(() => {
-    const [yearStr, monthStr] = dashboardMonth.split('-');
-    const year = Number(yearStr);
-    const month = Number(monthStr) - 1;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const sums = Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, total: 0 }));
+    const from = new Date(`${dashboardFrom}T00:00:00`);
+    const to = new Date(`${dashboardTo}T00:00:00`);
+    if (isNaN(from) || isNaN(to) || from > to) return [];
 
-    for (const o of orders) {
-      const d = new Date(o.created_at);
-      if (d.getFullYear() === year && d.getMonth() === month) {
-        const total = o.items.reduce((sum, it) => sum + it.price * it.qty, 0);
-        sums[d.getDate() - 1].total += total;
-      }
+    const days = [];
+    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+      days.push(new Date(d));
     }
 
+    const totalsByKey = {};
+    for (const o of orders) {
+      const d = new Date(o.created_at);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const total = o.items.reduce((sum, it) => sum + it.price * it.qty, 0);
+      totalsByKey[key] = (totalsByKey[key] ?? 0) + total;
+    }
+
+    const sums = days.map((d) => {
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      return { date: d, total: totalsByKey[key] ?? 0 };
+    });
+
     const max = Math.max(1, ...sums.map((s) => s.total));
-    return sums.map((s) => ({ label: String(s.day), heightPx: Math.round((s.total / max) * 90) + 'px' }));
-  }, [orders, dashboardMonth]);
+    return sums.map((s) => ({
+      label: `${s.date.getDate()}/${s.date.getMonth() + 1}`,
+      dateDisplay: s.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+      totalDisplay: money(s.total),
+      heightPx: Math.round((s.total / max) * 90) + 'px',
+    }));
+  }, [orders, dashboardFrom, dashboardTo]);
 
   const recentOrders = useMemo(
     () =>
@@ -463,8 +486,10 @@ export default function App() {
                     todayLabel={todayLabel()}
                     stats={dashboardStats}
                     dailyBars={dailyBars}
-                    dashboardMonth={dashboardMonth}
-                    onDashboardMonthChange={setDashboardMonth}
+                    dashboardFrom={dashboardFrom}
+                    dashboardTo={dashboardTo}
+                    onDashboardFromChange={setDashboardFrom}
+                    onDashboardToChange={setDashboardTo}
                     recentOrders={recentOrders}
                   />
                 )}
