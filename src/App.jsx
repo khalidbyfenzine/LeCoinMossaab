@@ -10,9 +10,9 @@ import AdminNav from './components/admin/AdminNav.jsx';
 import Dashboard from './components/admin/Dashboard.jsx';
 import MenuItemsAdmin from './components/admin/MenuItemsAdmin.jsx';
 import TablesAdmin from './components/admin/TablesAdmin.jsx';
+import CategoriesAdmin from './components/admin/CategoriesAdmin.jsx';
 import StaffAdmin from './components/admin/StaffAdmin.jsx';
 
-const CATEGORY_LIST = ['Entrées', 'Plats', 'Accompagnements', 'Boissons', 'Desserts'];
 const HOUR_BUCKETS = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((h) => ({
   h,
   label: `${h}h`,
@@ -37,6 +37,7 @@ export default function App() {
   const [menuItems, setMenuItems] = useState([]);
   const [orders, setOrders] = useState([]);
   const [tables, setTables] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -47,7 +48,7 @@ export default function App() {
 
   const [view, setView] = useState('cashier');
   const [adminSection, setAdminSection] = useState('dashboard');
-  const [category, setCategory] = useState(CATEGORY_LIST[0]);
+  const [category, setCategory] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null);
   const [cart, setCart] = useState([]);
 
@@ -59,21 +60,26 @@ export default function App() {
           { data: menuData, error: menuErr },
           { data: orderData, error: orderErr },
           { data: tableData, error: tableErr },
+          { data: categoryData, error: categoryErr },
         ] = await Promise.all([
           supabase.from('staff_public').select('*'),
           supabase.from('menu_items').select('*'),
           supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false }),
           supabase.from('tables').select('*').order('id', { ascending: true }),
+          supabase.from('categories').select('*').order('id', { ascending: true }),
         ]);
         if (staffErr) throw staffErr;
         if (menuErr) throw menuErr;
         if (orderErr) throw orderErr;
         if (tableErr) throw tableErr;
+        if (categoryErr) throw categoryErr;
 
         setStaffList(staffData ?? []);
         setMenuItems(menuData ?? []);
         setTables(tableData ?? []);
         setSelectedTable((tableData ?? [])[3]?.label ?? (tableData ?? [])[0]?.label ?? null);
+        setCategories(categoryData ?? []);
+        setCategory((categoryData ?? [])[0]?.label ?? null);
         setOrders(
           (orderData ?? []).map((o) => ({
             id: o.id,
@@ -106,6 +112,13 @@ export default function App() {
       setSelectedTable(tables[0].label);
     }
   }, [tables, selectedTable]);
+
+  useEffect(() => {
+    if (categories.length === 0) return;
+    if (!categories.some((c) => c.label === category)) {
+      setCategory(categories[0].label);
+    }
+  }, [categories, category]);
 
   const setLoginRoleAndReset = (role) => {
     setLoginRole(role);
@@ -285,6 +298,18 @@ export default function App() {
     setTables((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const addCategory = async (label) => {
+    const { data, error } = await supabase.from('categories').insert({ label }).select().single();
+    if (error) return;
+    setCategories((prev) => [...prev, data]);
+  };
+
+  const removeCategory = async (id) => {
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) return;
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+  };
+
   const filteredItems = useMemo(() => menuItems.filter((m) => m.category === category), [menuItems, category]);
 
   const subtotal = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.qty, 0), [cart]);
@@ -299,6 +324,7 @@ export default function App() {
   );
 
   const tableLabels = useMemo(() => tables.map((t) => t.label), [tables]);
+  const categoryLabels = useMemo(() => categories.map((c) => c.label), [categories]);
 
   const dashboardStats = useMemo(() => {
     const sales = todaysOrders.reduce((sum, o) => sum + o.items.reduce((s, it) => s + it.price * it.qty, 0), 0);
@@ -388,7 +414,7 @@ export default function App() {
 
           {view === 'cashier' && (
             <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-              <CategorySidebar categories={CATEGORY_LIST} category={category} onSelectCategory={setCategory} />
+              <CategorySidebar categories={categoryLabels} category={category} onSelectCategory={setCategory} />
               <MenuGrid items={filteredItems} onAdd={addToCart} />
               <OrderTicket
                 selectedTable={selectedTable}
@@ -415,12 +441,15 @@ export default function App() {
                 {adminSection === 'menu' && (
                   <MenuItemsAdmin
                     items={menuItems}
-                    categories={CATEGORY_LIST}
+                    categories={categoryLabels}
                     onToggle={toggleAvailable}
                     onAdd={addMenuItem}
                     onUpdate={updateMenuItem}
                     onDelete={deleteMenuItem}
                   />
+                )}
+                {adminSection === 'categories' && (
+                  <CategoriesAdmin categories={categories} onAdd={addCategory} onRemove={removeCategory} />
                 )}
                 {adminSection === 'tables' && <TablesAdmin tables={tables} onAdd={addTable} onRemove={removeTable} />}
                 {adminSection === 'staff' && (

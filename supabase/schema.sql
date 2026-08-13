@@ -32,6 +32,11 @@ create table if not exists tables (
   label text not null unique
 );
 
+create table if not exists categories (
+  id bigint generated always as identity primary key,
+  label text not null unique
+);
+
 create table if not exists order_items (
   id bigint generated always as identity primary key,
   order_id bigint not null references orders (id) on delete cascade,
@@ -72,6 +77,7 @@ alter table menu_items enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
 alter table tables enable row level security;
+alter table categories enable row level security;
 
 -- Staff writes are allowed (admin CRUD) but reads stay off-limits (pins live here) — only the view/RPC above can be read.
 drop policy if exists "staff insert" on staff;
@@ -113,6 +119,13 @@ create policy "tables write" on tables for insert with check (true);
 drop policy if exists "tables delete" on tables;
 create policy "tables delete" on tables for delete using (true);
 
+drop policy if exists "categories read" on categories;
+create policy "categories read" on categories for select using (true);
+drop policy if exists "categories write" on categories;
+create policy "categories write" on categories for insert with check (true);
+drop policy if exists "categories delete" on categories;
+create policy "categories delete" on categories for delete using (true);
+
 grant select on staff_public to anon, authenticated;
 grant execute on function check_staff_pin(text, text) to anon, authenticated;
 grant execute on function set_staff_clocked_in(text, boolean) to anon, authenticated;
@@ -121,6 +134,7 @@ grant select, insert, update, delete on menu_items to anon, authenticated;
 grant select, insert, update, delete on orders to anon, authenticated;
 grant select, insert, delete on order_items to anon, authenticated;
 grant select, insert, delete on tables to anon, authenticated;
+grant select, insert, delete on categories to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
 -- Seed data (matches the "Ember & Oak" design mock)
@@ -133,6 +147,10 @@ on conflict (id) do nothing;
 insert into tables (label) values
   ('Table 1'), ('Table 2'), ('Table 3'), ('Table 4'),
   ('Table 5'), ('Table 6'), ('Table 7'), ('Table 8'), ('À Emporter')
+on conflict (label) do nothing;
+
+insert into categories (label) values
+  ('Entrées'), ('Plats'), ('Accompagnements'), ('Boissons'), ('Desserts')
 on conflict (label) do nothing;
 
 insert into menu_items (id, name, category, price, available) values
