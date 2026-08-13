@@ -11,6 +11,7 @@ export default function OrderTicket({
   onSendToKitchen,
   tableOrders,
   onEditOrder,
+  onMarkPaid,
 }) {
   return (
     <div
@@ -116,12 +117,20 @@ export default function OrderTicket({
                     {timeLabel(ord.created_at)} · {money(orderTotal)}
                   </div>
                 </div>
-                <button
-                  onClick={() => onEditOrder(ord.id)}
-                  style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-accent)', background: 'transparent', color: 'var(--color-accent)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
-                >
-                  Modifier
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <button
+                    onClick={() => onMarkPaid(ord.id)}
+                    style={{ padding: '6px 11px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Marquer payé
+                  </button>
+                  <button
+                    onClick={() => onEditOrder(ord.id)}
+                    style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-accent)', background: 'transparent', color: 'var(--color-accent)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Modifier
+                  </button>
+                </div>
               </div>
             );
           })}

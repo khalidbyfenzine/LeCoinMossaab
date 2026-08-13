@@ -229,6 +229,11 @@ export default function App() {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
   };
 
+  const markOrderPaid = async (orderId) => {
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'paid' } : o)));
+    await supabase.from('orders').update({ status: 'paid' }).eq('id', orderId);
+  };
+
   const toggleAvailable = async (id) => {
     const item = menuItems.find((m) => m.id === id);
     if (!item) return;
@@ -319,7 +324,7 @@ export default function App() {
   const todaysOrders = useMemo(() => orders.filter((o) => isToday(o.created_at)), [orders]);
 
   const tableOrders = useMemo(
-    () => todaysOrders.filter((o) => o.table_label === selectedTable),
+    () => todaysOrders.filter((o) => o.table_label === selectedTable && o.status === 'open'),
     [todaysOrders, selectedTable]
   );
 
@@ -329,13 +334,20 @@ export default function App() {
   const dashboardStats = useMemo(() => {
     const sales = todaysOrders.reduce((sum, o) => sum + o.items.reduce((s, it) => s + it.price * it.qty, 0), 0);
     const ordersCount = todaysOrders.length;
-    const avgTicket = ordersCount > 0 ? sales / ordersCount : 0;
-    const covers = todaysOrders.reduce((sum, o) => sum + (o.covers ?? 0), 0);
+
+    const qtyByName = {};
+    for (const o of todaysOrders) {
+      for (const it of o.items) {
+        qtyByName[it.name] = (qtyByName[it.name] ?? 0) + it.qty;
+      }
+    }
+    const topEntry = Object.entries(qtyByName).sort((a, b) => b[1] - a[1])[0];
+
     return {
       salesDisplay: money(sales),
       ordersCount,
-      avgTicketDisplay: money(avgTicket),
-      covers,
+      topItemName: topEntry ? topEntry[0] : '—',
+      topItemQty: topEntry ? topEntry[1] : 0,
     };
   }, [todaysOrders]);
 
@@ -427,6 +439,7 @@ export default function App() {
                 onSendToKitchen={sendToKitchen}
                 tableOrders={tableOrders}
                 onEditOrder={editOrder}
+                onMarkPaid={markOrderPaid}
               />
             </div>
           )}

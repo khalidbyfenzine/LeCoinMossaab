@@ -4,12 +4,16 @@ export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders 
       <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Tableau de bord</div>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>{todayLabel}</div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 26 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 26 }}>
         {[
-          { label: 'Ventes du jour', value: stats.salesDisplay },
-          { label: 'Commandes', value: stats.ordersCount },
-          { label: 'Ticket moyen', value: stats.avgTicketDisplay },
-          { label: 'Couverts', value: stats.covers },
+          { label: 'Ventes du jour', value: stats.salesDisplay, mono: true },
+          { label: 'Commandes', value: stats.ordersCount, mono: true },
+          {
+            label: 'Article le plus vendu',
+            value: stats.topItemName,
+            subtitle: stats.topItemQty > 0 ? `${stats.topItemQty} vendu${stats.topItemQty === 1 ? '' : 's'}` : null,
+            mono: false,
+          },
         ].map((tile) => (
           <div
             key={tile.label}
@@ -18,7 +22,21 @@ export default function Dashboard({ todayLabel, stats, hourlyBars, recentOrders 
             <div style={{ fontSize: 12, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
               {tile.label}
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 24, fontWeight: 600 }}>{tile.value}</div>
+            <div
+              style={{
+                fontFamily: tile.mono ? 'var(--font-mono)' : 'var(--font-sans)',
+                fontSize: tile.mono ? 24 : 18,
+                fontWeight: 600,
+                lineHeight: 1.3,
+              }}
+            >
+              {tile.value}
+            </div>
+            {tile.subtitle && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--color-muted)', marginTop: 2 }}>
+                {tile.subtitle}
+              </div>
+            )}
           </div>
         ))}
       </div>
