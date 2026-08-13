@@ -1,4 +1,4 @@
--- Ember & Oak POS — schema, RPC, and seed data
+-- Le Coin Mosaab POS — schema, RPC, and seed data
 -- Run this in the Supabase SQL editor on a fresh project.
 
 create table if not exists staff (
@@ -137,7 +137,7 @@ grant select, insert, delete on tables to anon, authenticated;
 grant select, insert, delete on categories to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
--- Seed data (matches the "Ember & Oak" design mock)
+-- Seed data
 
 insert into staff (id, name, role, login_role, pin, clocked_in) values
   ('cash1', 'Caissier', 'Serveur', 'cashier', '1234', true),

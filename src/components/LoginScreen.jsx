@@ -43,9 +43,9 @@ export default function LoginScreen({
             color: '#fff',
           }}
         >
-          E
+          M
         </div>
-        <div style={{ fontWeight: 700, fontSize: 20 }}>Ember &amp; Oak</div>
+        <div style={{ fontWeight: 700, fontSize: 20 }}>Le Coin Mosaab</div>
         <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>Connexion du personnel</div>
       </div>
 

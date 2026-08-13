@@ -40,9 +40,9 @@ export default function TopBar({
             color: 'oklch(97% 0.01 70)',
           }}
         >
-          E
+          M
         </div>
-        <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.2 }}>Ember &amp; Oak</div>
+        <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: 0.2 }}>Le Coin Mosaab</div>
       </div>
 
       {isCashier ? (
