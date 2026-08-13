@@ -302,6 +302,7 @@ export default function App() {
             onGoCashier={() => setView('cashier')}
             onGoAdmin={() => setView('admin')}
             isCashier={view === 'cashier'}
+            canAccessAdmin={currentUser?.login_role === 'admin'}
             tables={TABLES}
             selectedTable={selectedTable}
             onSelectTable={setSelectedTable}
@@ -329,7 +330,7 @@ export default function App() {
             </div>
           )}
 
-          {view === 'admin' && (
+          {view === 'admin' && currentUser?.login_role === 'admin' && (
             <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
               <AdminNav adminSection={adminSection} onSelect={setAdminSection} />
               <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>

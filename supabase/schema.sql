@@ -100,12 +100,8 @@ grant usage, select on all sequences in schema public to anon, authenticated;
 -- Seed data (matches the "Ember & Oak" design mock)
 
 insert into staff (id, name, role, login_role, pin, clocked_in) values
-  ('c1', 'Maria Lopez', 'Server', 'cashier', '1234', true),
-  ('c2', 'James Chen', 'Server', 'cashier', '2345', true),
-  ('c3', 'Ana Rivera', 'Bartender', 'cashier', '3456', false),
-  ('c4', 'Devon Wright', 'Host', 'cashier', '4567', true),
-  ('a1', 'Sam Okafor', 'Owner', 'admin', '9001', true),
-  ('a2', 'Rosa Martinez', 'Manager', 'admin', '9002', true)
+  ('cash1', 'Cashier', 'Server', 'cashier', '1234', true),
+  ('admin1', 'Admin', 'Manager', 'admin', '9999', true)
 on conflict (id) do nothing;
 
 insert into menu_items (id, name, category, price, available) values

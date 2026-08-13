@@ -3,6 +3,7 @@ export default function TopBar({
   onGoCashier,
   onGoAdmin,
   isCashier,
+  canAccessAdmin,
   tables,
   selectedTable,
   onSelectTable,
@@ -88,47 +89,49 @@ export default function TopBar({
         </div>
       )}
 
-      <div
-        style={{
-          display: 'flex',
-          gap: 6,
-          flex: '0 0 auto',
-          background: 'var(--color-dark-alt)',
-          padding: 4,
-          borderRadius: 8,
-        }}
-      >
-        <button
-          onClick={onGoCashier}
+      {canAccessAdmin && (
+        <div
           style={{
-            padding: '7px 16px',
-            borderRadius: 6,
-            border: 'none',
-            background: view === 'cashier' ? 'var(--color-accent)' : 'transparent',
-            color: view === 'cashier' ? '#fff' : 'var(--color-dark-text-dim)',
-            fontWeight: view === 'cashier' ? 600 : 500,
-            fontSize: 13,
-            cursor: 'pointer',
+            display: 'flex',
+            gap: 6,
+            flex: '0 0 auto',
+            background: 'var(--color-dark-alt)',
+            padding: 4,
+            borderRadius: 8,
           }}
         >
-          Cashier
-        </button>
-        <button
-          onClick={onGoAdmin}
-          style={{
-            padding: '7px 16px',
-            borderRadius: 6,
-            border: 'none',
-            background: view === 'admin' ? 'var(--color-accent)' : 'transparent',
-            color: view === 'admin' ? '#fff' : 'var(--color-dark-text-dim)',
-            fontWeight: view === 'admin' ? 600 : 500,
-            fontSize: 13,
-            cursor: 'pointer',
-          }}
-        >
-          Admin
-        </button>
-      </div>
+          <button
+            onClick={onGoCashier}
+            style={{
+              padding: '7px 16px',
+              borderRadius: 6,
+              border: 'none',
+              background: view === 'cashier' ? 'var(--color-accent)' : 'transparent',
+              color: view === 'cashier' ? '#fff' : 'var(--color-dark-text-dim)',
+              fontWeight: view === 'cashier' ? 600 : 500,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            Cashier
+          </button>
+          <button
+            onClick={onGoAdmin}
+            style={{
+              padding: '7px 16px',
+              borderRadius: 6,
+              border: 'none',
+              background: view === 'admin' ? 'var(--color-accent)' : 'transparent',
+              color: view === 'admin' ? '#fff' : 'var(--color-dark-text-dim)',
+              fontWeight: view === 'admin' ? 600 : 500,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            Admin
+          </button>
+        </div>
+      )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '0 0 auto' }}>
         <div style={{ fontSize: 13, color: 'var(--color-dark-text-dim)' }}>{currentUserName}</div>
