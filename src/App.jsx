@@ -383,8 +383,8 @@ export default function App() {
   const todaysOrders = useMemo(() => orders.filter((o) => isToday(o.created_at)), [orders]);
 
   const tableOrders = useMemo(
-    () => todaysOrders.filter((o) => o.table_label === selectedTable && o.status === 'open'),
-    [todaysOrders, selectedTable]
+    () => orders.filter((o) => o.table_label === selectedTable && o.status === 'open'),
+    [orders, selectedTable]
   );
 
   const tableLabels = useMemo(() => tables.map((t) => t.label), [tables]);
@@ -447,10 +447,13 @@ export default function App() {
     const to = new Date(`${ordersTo}T23:59:59`);
     return orders
       .filter((o) => {
+        if (ordersStatusFilter !== 'all' && o.status !== ordersStatusFilter) return false;
+        // Open orders are pending business — always show them regardless of the
+        // date range so admin never loses track of an unpaid order.
+        if (o.status === 'open') return true;
         const d = new Date(o.created_at);
         if (!isNaN(from) && d < from) return false;
         if (!isNaN(to) && d > to) return false;
-        if (ordersStatusFilter !== 'all' && o.status !== ordersStatusFilter) return false;
         return true;
       })
       .map((o) => {
