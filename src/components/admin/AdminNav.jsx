@@ -1,5 +1,7 @@
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Tableau de bord' },
+  { id: 'orders', label: 'Commandes' },
+  { id: 'caisse', label: 'Caisse' },
   { id: 'menu', label: 'Articles du menu' },
   { id: 'categories', label: 'Catégories' },
   { id: 'tables', label: 'Tables' },

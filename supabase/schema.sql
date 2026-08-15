@@ -46,6 +46,19 @@ create table if not exists order_items (
   qty int not null
 );
 
+-- Cash register ledger. 'in' transactions are auto-created when an order is
+-- marked paid (order_id set); 'out' (and manual 'in') transactions are added
+-- by admin directly (order_id null) — e.g. paying an expense out of the till.
+create table if not exists caisse_transactions (
+  id bigint generated always as identity primary key,
+  type text not null check (type in ('in', 'out')),
+  amount numeric(10, 2) not null check (amount > 0),
+  description text not null,
+  order_id bigint references orders (id) on delete set null,
+  created_by text,
+  created_at timestamptz not null default now()
+);
+
 -- Staff list without the pin column, safe to expose to the client for the login screen.
 create or replace view staff_public as
   select id, name, role, login_role, clocked_in from staff;
@@ -78,6 +91,7 @@ alter table orders enable row level security;
 alter table order_items enable row level security;
 alter table tables enable row level security;
 alter table categories enable row level security;
+alter table caisse_transactions enable row level security;
 
 -- Staff writes are allowed (admin CRUD) but reads stay off-limits (pins live here) — only the view/RPC above can be read.
 drop policy if exists "staff insert" on staff;
@@ -126,6 +140,13 @@ create policy "categories write" on categories for insert with check (true);
 drop policy if exists "categories delete" on categories;
 create policy "categories delete" on categories for delete using (true);
 
+drop policy if exists "caisse_transactions read" on caisse_transactions;
+create policy "caisse_transactions read" on caisse_transactions for select using (true);
+drop policy if exists "caisse_transactions write" on caisse_transactions;
+create policy "caisse_transactions write" on caisse_transactions for insert with check (true);
+drop policy if exists "caisse_transactions delete" on caisse_transactions;
+create policy "caisse_transactions delete" on caisse_transactions for delete using (true);
+
 grant select on staff_public to anon, authenticated;
 grant execute on function check_staff_pin(text, text) to anon, authenticated;
 grant execute on function set_staff_clocked_in(text, boolean) to anon, authenticated;
@@ -135,6 +156,7 @@ grant select, insert, update, delete on orders to anon, authenticated;
 grant select, insert, delete on order_items to anon, authenticated;
 grant select, insert, delete on tables to anon, authenticated;
 grant select, insert, delete on categories to anon, authenticated;
+grant select, insert, delete on caisse_transactions to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
 -- Seed data

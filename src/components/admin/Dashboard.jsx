@@ -20,7 +20,6 @@ export default function Dashboard({
   dashboardTo,
   onDashboardFromChange,
   onDashboardToChange,
-  recentOrders,
 }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
   return (
@@ -120,42 +119,6 @@ export default function Dashboard({
             </div>
           ))}
         </div>
-      </div>
-
-      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Commandes récentes</div>
-      <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', minWidth: 480, borderCollapse: 'collapse', fontSize: 13.5 }}>
-        <thead>
-          <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--color-border-strong)' }}>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Table</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Serveur</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Articles</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Total</th>
-            <th style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-muted)' }}>Statut</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recentOrders.map((o) => (
-            <tr key={o.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <td style={{ padding: '9px 10px', fontFamily: 'var(--font-mono)' }}>{o.table}</td>
-              <td style={{ padding: '9px 10px' }}>{o.server}</td>
-              <td style={{ padding: '9px 10px', color: 'var(--color-muted)' }}>{o.itemsLabel}</td>
-              <td style={{ padding: '9px 10px', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{o.totalDisplay}</td>
-              <td style={{ padding: '9px 10px' }}>
-                {o.paid ? (
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-success-text)', background: 'var(--color-success-bg)', padding: '3px 9px', borderRadius: 20 }}>
-                    Payé
-                  </span>
-                ) : (
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-accent)', background: 'var(--color-open-bg)', padding: '3px 9px', borderRadius: 20 }}>
-                    Ouverte
-                  </span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
       </div>
     </div>
   );

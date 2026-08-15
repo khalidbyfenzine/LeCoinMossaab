@@ -8,6 +8,8 @@ import MenuGrid from './components/cashier/MenuGrid.jsx';
 import OrderTicket from './components/cashier/OrderTicket.jsx';
 import AdminNav from './components/admin/AdminNav.jsx';
 import Dashboard from './components/admin/Dashboard.jsx';
+import OrdersAdmin from './components/admin/OrdersAdmin.jsx';
+import CaisseAdmin from './components/admin/CaisseAdmin.jsx';
 import MenuItemsAdmin from './components/admin/MenuItemsAdmin.jsx';
 import TablesAdmin from './components/admin/TablesAdmin.jsx';
 import CategoriesAdmin from './components/admin/CategoriesAdmin.jsx';
@@ -48,6 +50,7 @@ export default function App() {
   const [orders, setOrders] = useState([]);
   const [tables, setTables] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [caisseTransactions, setCaisseTransactions] = useState([]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -63,6 +66,9 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [dashboardFrom, setDashboardFrom] = useState(firstDayOfMonthValue);
   const [dashboardTo, setDashboardTo] = useState(lastDayOfMonthValue);
+  const [ordersFrom, setOrdersFrom] = useState(firstDayOfMonthValue);
+  const [ordersTo, setOrdersTo] = useState(lastDayOfMonthValue);
+  const [ordersStatusFilter, setOrdersStatusFilter] = useState('all');
 
   useEffect(() => {
     async function load() {
@@ -73,18 +79,21 @@ export default function App() {
           { data: orderData, error: orderErr },
           { data: tableData, error: tableErr },
           { data: categoryData, error: categoryErr },
+          { data: caisseData, error: caisseErr },
         ] = await Promise.all([
           supabase.from('staff_public').select('*'),
           supabase.from('menu_items').select('*'),
           supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false }),
           supabase.from('tables').select('*').order('id', { ascending: true }),
           supabase.from('categories').select('*').order('id', { ascending: true }),
+          supabase.from('caisse_transactions').select('*').order('created_at', { ascending: false }),
         ]);
         if (staffErr) throw staffErr;
         if (menuErr) throw menuErr;
         if (orderErr) throw orderErr;
         if (tableErr) throw tableErr;
         if (categoryErr) throw categoryErr;
+        if (caisseErr) throw caisseErr;
 
         setStaffList(staffData ?? []);
         setMenuItems(menuData ?? []);
@@ -92,6 +101,9 @@ export default function App() {
         setSelectedTable((tableData ?? [])[3]?.label ?? (tableData ?? [])[0]?.label ?? null);
         setCategories(categoryData ?? []);
         setCategory((categoryData ?? [])[0]?.label ?? null);
+        setCaisseTransactions(
+          (caisseData ?? []).map((t) => ({ ...t, amount: Number(t.amount) }))
+        );
         setOrders(
           (orderData ?? []).map((o) => ({
             id: o.id,
@@ -242,8 +254,27 @@ export default function App() {
   };
 
   const markOrderPaid = async (orderId) => {
+    const order = orders.find((o) => o.id === orderId);
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'paid' } : o)));
     await supabase.from('orders').update({ status: 'paid' }).eq('id', orderId);
+
+    if (order) {
+      const total = order.items.reduce((sum, it) => sum + it.price * it.qty, 0);
+      const { data, error } = await supabase
+        .from('caisse_transactions')
+        .insert({
+          type: 'in',
+          amount: total,
+          description: `Commande ${order.table_label}`,
+          order_id: orderId,
+          created_by: currentUser?.name ?? null,
+        })
+        .select()
+        .single();
+      if (!error) {
+        setCaisseTransactions((prev) => [{ ...data, amount: Number(data.amount) }, ...prev]);
+      }
+    }
   };
 
   const toggleAvailable = async (id) => {
@@ -327,6 +358,22 @@ export default function App() {
     setCategories((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const addCaisseTransaction = async ({ type, amount, description }) => {
+    const { data, error } = await supabase
+      .from('caisse_transactions')
+      .insert({ type, amount, description, order_id: null, created_by: currentUser?.name ?? null })
+      .select()
+      .single();
+    if (error) return;
+    setCaisseTransactions((prev) => [{ ...data, amount: Number(data.amount) }, ...prev]);
+  };
+
+  const deleteCaisseTransaction = async (id) => {
+    const { error } = await supabase.from('caisse_transactions').delete().eq('id', id);
+    if (error) return;
+    setCaisseTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const filteredItems = useMemo(() => menuItems.filter((m) => m.category === category), [menuItems, category]);
 
   const subtotal = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.qty, 0), [cart]);
@@ -395,21 +442,59 @@ export default function App() {
     }));
   }, [orders, dashboardFrom, dashboardTo]);
 
-  const recentOrders = useMemo(
-    () =>
-      orders.slice(0, 8).map((o) => {
+  const filteredOrders = useMemo(() => {
+    const from = new Date(`${ordersFrom}T00:00:00`);
+    const to = new Date(`${ordersTo}T23:59:59`);
+    return orders
+      .filter((o) => {
+        const d = new Date(o.created_at);
+        if (!isNaN(from) && d < from) return false;
+        if (!isNaN(to) && d > to) return false;
+        if (ordersStatusFilter !== 'all' && o.status !== ordersStatusFilter) return false;
+        return true;
+      })
+      .map((o) => {
         const itemCount = o.items.reduce((sum, it) => sum + it.qty, 0);
         const orderTotal = o.items.reduce((sum, it) => sum + it.price * it.qty, 0);
         return {
           id: o.id,
           table: o.table_label,
           server: o.server_name,
+          dateDisplay: new Date(o.created_at).toLocaleString('fr-FR', {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
           itemsLabel: `${itemCount} article${itemCount === 1 ? '' : 's'}`,
           totalDisplay: money(orderTotal),
           paid: o.status === 'paid',
         };
-      }),
-    [orders]
+      });
+  }, [orders, ordersFrom, ordersTo, ordersStatusFilter]);
+
+  const caisseBalance = useMemo(
+    () => caisseTransactions.reduce((sum, t) => sum + (t.type === 'in' ? t.amount : -t.amount), 0),
+    [caisseTransactions]
+  );
+
+  const caisseTransactionsDisplay = useMemo(
+    () =>
+      caisseTransactions.map((t) => ({
+        id: t.id,
+        type: t.type,
+        amountDisplay: money(t.amount),
+        description: t.description,
+        dateDisplay: new Date(t.created_at).toLocaleString('fr-FR', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        createdBy: t.created_by,
+        linkedToOrder: t.order_id != null,
+      })),
+    [caisseTransactions]
   );
 
   if (loading) {
@@ -490,7 +575,25 @@ export default function App() {
                     dashboardTo={dashboardTo}
                     onDashboardFromChange={setDashboardFrom}
                     onDashboardToChange={setDashboardTo}
-                    recentOrders={recentOrders}
+                  />
+                )}
+                {adminSection === 'orders' && (
+                  <OrdersAdmin
+                    orders={filteredOrders}
+                    ordersFrom={ordersFrom}
+                    ordersTo={ordersTo}
+                    statusFilter={ordersStatusFilter}
+                    onFromChange={setOrdersFrom}
+                    onToChange={setOrdersTo}
+                    onStatusFilterChange={setOrdersStatusFilter}
+                  />
+                )}
+                {adminSection === 'caisse' && (
+                  <CaisseAdmin
+                    balanceDisplay={money(caisseBalance)}
+                    transactions={caisseTransactionsDisplay}
+                    onAdd={addCaisseTransaction}
+                    onDelete={deleteCaisseTransaction}
                   />
                 )}
                 {adminSection === 'menu' && (
