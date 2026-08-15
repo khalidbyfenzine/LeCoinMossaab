@@ -290,13 +290,14 @@ export default function App() {
       .insert({ id, name, category, price, available: true, image_url: image_url ?? null })
       .select()
       .single();
-    if (error) return;
+    if (error) throw error;
     setMenuItems((prev) => [...prev, data]);
   };
 
   const updateMenuItem = async (id, fields) => {
-    setMenuItems((prev) => prev.map((m) => (m.id === id ? { ...m, ...fields } : m)));
-    await supabase.from('menu_items').update(fields).eq('id', id);
+    const { data, error } = await supabase.from('menu_items').update(fields).eq('id', id).select().single();
+    if (error) throw error;
+    setMenuItems((prev) => prev.map((m) => (m.id === id ? data : m)));
   };
 
   const deleteMenuItem = async (id) => {

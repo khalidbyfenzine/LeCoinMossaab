@@ -46,11 +46,15 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
   const [newForm, setNewForm] = useState({ ...EMPTY_FORM, category: categories[0] ?? '' });
   const [newUploading, setNewUploading] = useState(false);
   const [newImageError, setNewImageError] = useState(null);
+  const [newSubmitting, setNewSubmitting] = useState(false);
+  const [newSubmitError, setNewSubmitError] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(EMPTY_FORM);
   const [editUploading, setEditUploading] = useState(false);
   const [editImageError, setEditImageError] = useState(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editSubmitError, setEditSubmitError] = useState(null);
 
   const handleImageChange = async (e, isEdit) => {
     const file = e.target.files?.[0];
@@ -73,38 +77,56 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
     }
   };
 
-  const submitAdd = (e) => {
+  const submitAdd = async (e) => {
     e.preventDefault();
     const price = Number(newForm.price);
     if (!newForm.name.trim() || !newForm.category || !(price > 0)) return;
-    onAdd({ name: newForm.name.trim(), category: newForm.category, price, image_url: newForm.image_url || null });
-    setNewForm({ ...EMPTY_FORM, category: newForm.category });
-    setNewImageError(null);
+    setNewSubmitError(null);
+    setNewSubmitting(true);
+    try {
+      await onAdd({ name: newForm.name.trim(), category: newForm.category, price, image_url: newForm.image_url || null });
+      setNewForm({ ...EMPTY_FORM, category: newForm.category });
+      setNewImageError(null);
+    } catch (err) {
+      setNewSubmitError(err.message ?? "Échec de l'ajout.");
+    } finally {
+      setNewSubmitting(false);
+    }
   };
 
   const startEdit = (item) => {
     setEditingId(item.id);
     setEditForm({ name: item.name, category: item.category, price: String(item.price), image_url: item.image_url ?? '' });
     setEditImageError(null);
+    setEditSubmitError(null);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditForm(EMPTY_FORM);
     setEditImageError(null);
+    setEditSubmitError(null);
   };
 
-  const submitEdit = (e) => {
+  const submitEdit = async (e) => {
     e.preventDefault();
     const price = Number(editForm.price);
     if (!editForm.name.trim() || !editForm.category || !(price > 0)) return;
-    onUpdate(editingId, {
-      name: editForm.name.trim(),
-      category: editForm.category,
-      price,
-      image_url: editForm.image_url || null,
-    });
-    cancelEdit();
+    setEditSubmitError(null);
+    setEditSubmitting(true);
+    try {
+      await onUpdate(editingId, {
+        name: editForm.name.trim(),
+        category: editForm.category,
+        price,
+        image_url: editForm.image_url || null,
+      });
+      cancelEdit();
+    } catch (err) {
+      setEditSubmitError(err.message ?? "Échec de l'enregistrement.");
+    } finally {
+      setEditSubmitting(false);
+    }
   };
 
   return (
@@ -154,12 +176,15 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
         />
         <button
           type="submit"
-          disabled={newUploading}
-          style={{ padding: '9px 16px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: newUploading ? 'not-allowed' : 'pointer', opacity: newUploading ? 0.6 : 1 }}
+          disabled={newUploading || newSubmitting}
+          style={{ padding: '9px 16px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: newUploading || newSubmitting ? 'not-allowed' : 'pointer', opacity: newUploading || newSubmitting ? 0.6 : 1 }}
         >
-          Ajouter
+          {newSubmitting ? 'Ajout…' : 'Ajouter'}
         </button>
       </form>
+      {newSubmitError && (
+        <div style={{ fontSize: 12.5, color: 'var(--color-accent)', marginTop: -18, marginBottom: 22 }}>{newSubmitError}</div>
+      )}
 
       {categories.map((cat) => {
         const catItems = items.filter((m) => m.category === cat);
@@ -214,13 +239,16 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                       step="0.5"
                       style={fieldStyle()}
                     />
+                    {editSubmitError && (
+                      <div style={{ fontSize: 11.5, color: 'var(--color-accent)' }}>{editSubmitError}</div>
+                    )}
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button
                         type="submit"
-                        disabled={editUploading}
-                        style={{ flex: 1, padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: editUploading ? 'not-allowed' : 'pointer', opacity: editUploading ? 0.6 : 1 }}
+                        disabled={editUploading || editSubmitting}
+                        style={{ flex: 1, padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: editUploading || editSubmitting ? 'not-allowed' : 'pointer', opacity: editUploading || editSubmitting ? 0.6 : 1 }}
                       >
-                        Enregistrer
+                        {editSubmitting ? 'Enregistrement…' : 'Enregistrer'}
                       </button>
                       <button
                         type="button"
