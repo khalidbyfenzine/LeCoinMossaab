@@ -215,18 +215,19 @@ export default function App() {
   const decQty = (id) =>
     setCart((prev) => prev.map((c) => (c.id === id ? { ...c, qty: c.qty - 1 } : c)).filter((c) => c.qty > 0));
 
-  const printOrder = async () => {
-    if (cart.length === 0 || !selectedTable) return;
+  const finalizeOrder = async () => {
+    if (cart.length === 0 || !selectedTable) throw new Error('Panier vide.');
+
     const { data: newOrder, error: orderErr } = await supabase
       .from('orders')
       .insert({ table_label: selectedTable, server_name: currentUser.name, status: 'paid', covers: 1 })
       .select()
       .single();
-    if (orderErr) return;
+    if (orderErr) throw orderErr;
 
     const itemRows = cart.map((c) => ({ order_id: newOrder.id, menu_item_id: c.id, name: c.name, price: c.price, qty: c.qty }));
     const { data: newItems, error: itemsErr } = await supabase.from('order_items').insert(itemRows).select();
-    if (itemsErr) return;
+    if (itemsErr) throw itemsErr;
 
     setOrders((prev) => [
       {
@@ -259,8 +260,7 @@ export default function App() {
 
     setCart([]);
 
-    // Receipt printing itself isn't implemented yet — the order is finalized as paid above,
-    // but no print action fires until the printer/receipt spec is provided.
+    return { id: newOrder.id, createdAt: newOrder.created_at };
   };
 
   const toggleAvailable = async (id) => {
@@ -538,7 +538,8 @@ export default function App() {
                 subtotal={subtotal}
                 tax={tax}
                 total={total}
-                onPrintOrder={printOrder}
+                onFinalizeOrder={finalizeOrder}
+                serverName={currentUser?.name}
               />
             </div>
           )}

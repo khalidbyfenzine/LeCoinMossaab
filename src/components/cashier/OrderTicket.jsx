@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { money } from '../../lib/format.js';
+import { buildReceiptBytes } from '../../lib/escpos.js';
+import { ensurePrinterConnected, sendBytes } from '../../lib/webusbPrinter.js';
 
 export default function OrderTicket({
   selectedTable,
@@ -9,9 +11,12 @@ export default function OrderTicket({
   subtotal,
   tax,
   total,
-  onPrintOrder,
+  onFinalizeOrder,
+  serverName,
 }) {
   const [amountReceived, setAmountReceived] = useState('');
+  const [printing, setPrinting] = useState(false);
+  const [printStatus, setPrintStatus] = useState(null);
 
   useEffect(() => {
     setAmountReceived('');
@@ -23,6 +28,48 @@ export default function OrderTicket({
 
   const receivedNum = Number(amountReceived) || 0;
   const changeDue = receivedNum - total;
+
+  const handlePrintClick = async () => {
+    if (cart.length === 0 || printing) return;
+    setPrintStatus(null);
+    setPrinting(true);
+
+    // Must be the first awaited call so it's still tied to this click —
+    // navigator.usb.requestDevice() only works as a direct response to a
+    // user gesture, and only prompts the browser's picker the first time.
+    let printer = null;
+    try {
+      printer = await ensurePrinterConnected();
+    } catch {
+      // No printer paired/available — the sale still finalizes below.
+    }
+
+    const receiptData = { table: selectedTable, server: serverName, items: cart, subtotal, tax, total, amountReceived: receivedNum, changeDue };
+
+    let orderInfo;
+    try {
+      orderInfo = await onFinalizeOrder();
+    } catch {
+      setPrintStatus({ ok: false, message: "Échec de l'enregistrement de la commande." });
+      setPrinting(false);
+      return;
+    }
+
+    if (!printer) {
+      setPrintStatus({ ok: false, message: 'Vente enregistrée. Imprimante non connectée.' });
+      setPrinting(false);
+      return;
+    }
+
+    try {
+      const bytes = buildReceiptBytes({ ...receiptData, createdAt: orderInfo?.createdAt });
+      await sendBytes(printer, bytes);
+      setPrintStatus({ ok: true, message: 'Ticket imprimé.' });
+    } catch {
+      setPrintStatus({ ok: false, message: "Vente enregistrée, mais l'impression a échoué." });
+    }
+    setPrinting(false);
+  };
 
   return (
     <div
@@ -139,13 +186,35 @@ export default function OrderTicket({
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
         <button
-          onClick={onPrintOrder}
-          style={{ flex: 1, padding: 13, borderRadius: 7, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+          onClick={handlePrintClick}
+          disabled={cart.length === 0 || printing}
+          style={{
+            padding: 13,
+            borderRadius: 7,
+            border: 'none',
+            background: 'var(--color-accent)',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: cart.length === 0 || printing ? 'not-allowed' : 'pointer',
+            opacity: cart.length === 0 || printing ? 0.6 : 1,
+          }}
         >
-          Imprimer
+          {printing ? 'Impression…' : 'Imprimer'}
         </button>
+        {printStatus && (
+          <div
+            style={{
+              fontSize: 12,
+              textAlign: 'center',
+              color: printStatus.ok ? 'var(--color-success-text)' : 'var(--color-accent)',
+            }}
+          >
+            {printStatus.message}
+          </div>
+        )}
       </div>
     </div>
   );
