@@ -47,6 +47,14 @@ create table if not exists order_items (
   qty int not null
 );
 
+-- Optional extras a menu item can be sold with (e.g. "Frites" +5 MAD on a burger).
+create table if not exists menu_item_addons (
+  id bigint generated always as identity primary key,
+  menu_item_id text not null references menu_items (id) on delete cascade,
+  name text not null,
+  price numeric(10, 2) not null
+);
+
 -- Cash register ledger. 'in' transactions are auto-created when an order is
 -- marked paid (order_id set); 'out' (and manual 'in') transactions are added
 -- by admin directly (order_id null) — e.g. paying an expense out of the till.
@@ -93,6 +101,7 @@ alter table order_items enable row level security;
 alter table tables enable row level security;
 alter table categories enable row level security;
 alter table caisse_transactions enable row level security;
+alter table menu_item_addons enable row level security;
 
 -- Staff writes are allowed (admin CRUD) but reads stay off-limits (pins live here) — only the view/RPC above can be read.
 drop policy if exists "staff insert" on staff;
@@ -148,6 +157,15 @@ create policy "caisse_transactions write" on caisse_transactions for insert with
 drop policy if exists "caisse_transactions delete" on caisse_transactions;
 create policy "caisse_transactions delete" on caisse_transactions for delete using (true);
 
+drop policy if exists "menu_item_addons read" on menu_item_addons;
+create policy "menu_item_addons read" on menu_item_addons for select using (true);
+drop policy if exists "menu_item_addons write" on menu_item_addons;
+create policy "menu_item_addons write" on menu_item_addons for insert with check (true);
+drop policy if exists "menu_item_addons update" on menu_item_addons;
+create policy "menu_item_addons update" on menu_item_addons for update using (true);
+drop policy if exists "menu_item_addons delete" on menu_item_addons;
+create policy "menu_item_addons delete" on menu_item_addons for delete using (true);
+
 grant select on staff_public to anon, authenticated;
 grant execute on function check_staff_pin(text, text) to anon, authenticated;
 grant execute on function set_staff_clocked_in(text, boolean) to anon, authenticated;
@@ -158,6 +176,7 @@ grant select, insert, delete on order_items to anon, authenticated;
 grant select, insert, delete on tables to anon, authenticated;
 grant select, insert, delete on categories to anon, authenticated;
 grant select, insert, delete on caisse_transactions to anon, authenticated;
+grant select, insert, update, delete on menu_item_addons to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
 
 -- Storage bucket for menu item photos, uploaded by admin from the Articles du menu screen.

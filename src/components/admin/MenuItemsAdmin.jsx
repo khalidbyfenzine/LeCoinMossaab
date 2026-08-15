@@ -42,7 +42,70 @@ function ImagePicker({ imageUrl, uploading, error, onSelectFile, label }) {
   );
 }
 
-export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onUpdate, onDelete }) {
+function AddonsEditor({ addons, onAdd, onDelete }) {
+  const [draftName, setDraftName] = useState('');
+  const [draftPrice, setDraftPrice] = useState('');
+
+  const submitAddon = (e) => {
+    e.preventDefault();
+    const price = Number(draftPrice);
+    if (!draftName.trim() || !(price > 0)) return;
+    onAdd(draftName.trim(), price);
+    setDraftName('');
+    setDraftPrice('');
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        Suppléments
+      </div>
+      {addons.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {addons.map((a) => (
+            <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5 }}>
+              <span style={{ flex: 1 }}>{a.name}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', fontWeight: 600 }}>+{money(a.price)}</span>
+              <button
+                type="button"
+                onClick={() => onDelete(a.id)}
+                style={{ padding: '2px 8px', borderRadius: 5, border: '1px solid var(--color-border)', background: 'transparent', fontSize: 11, color: 'var(--color-muted)', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 4 }}>
+        <input
+          value={draftName}
+          onChange={(e) => setDraftName(e.target.value)}
+          placeholder="Nom (ex. Frites)"
+          style={{ ...fieldStyle(), flex: 1.4, padding: '6px 8px', fontSize: 12 }}
+        />
+        <input
+          value={draftPrice}
+          onChange={(e) => setDraftPrice(e.target.value)}
+          placeholder="+MAD"
+          type="number"
+          min="0"
+          step="0.5"
+          style={{ ...fieldStyle(), flex: 1, padding: '6px 8px', fontSize: 12 }}
+        />
+        <button
+          type="button"
+          onClick={submitAddon}
+          style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function MenuItemsAdmin({ items, categories, addonsByItemId, onToggle, onAdd, onUpdate, onDelete, onAddAddon, onDeleteAddon }) {
   const [newForm, setNewForm] = useState({ ...EMPTY_FORM, category: categories[0] ?? '' });
   const [newUploading, setNewUploading] = useState(false);
   const [newImageError, setNewImageError] = useState(null);
@@ -214,6 +277,11 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                       step="0.5"
                       style={fieldStyle()}
                     />
+                    <AddonsEditor
+                      addons={addonsByItemId[m.id] ?? []}
+                      onAdd={(name, price) => onAddAddon(m.id, { name, price })}
+                      onDelete={onDeleteAddon}
+                    />
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button
                         type="submit"
@@ -279,6 +347,11 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--color-accent)', fontWeight: 600 }}>
                       {money(m.price)}
                     </div>
+                    {(addonsByItemId[m.id]?.length ?? 0) > 0 && (
+                      <div style={{ fontSize: 11, color: 'var(--color-muted)' }}>
+                        {addonsByItemId[m.id].length} supplément{addonsByItemId[m.id].length === 1 ? '' : 's'}
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                       {m.available ? (

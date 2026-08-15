@@ -106,7 +106,7 @@ export default function OrderTicket({
           </div>
         )}
         {cart.map((ln) => (
-          <div key={ln.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <div key={ln.lineKey} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--color-accent)', minWidth: 20 }}>
               {ln.qty}×
             </div>
@@ -115,13 +115,13 @@ export default function OrderTicket({
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13.5, fontWeight: 600 }}>{money(ln.price * ln.qty)}</div>
             <div style={{ display: 'flex', gap: 2 }}>
               <button
-                onClick={() => onDec(ln.id)}
+                onClick={() => onDec(ln.lineKey)}
                 style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid oklch(80% 0.015 60)', background: '#fff', fontSize: 12, lineHeight: 1, cursor: 'pointer' }}
               >
                 −
               </button>
               <button
-                onClick={() => onInc(ln.id)}
+                onClick={() => onInc(ln.lineKey)}
                 style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid oklch(80% 0.015 60)', background: '#fff', fontSize: 12, lineHeight: 1, cursor: 'pointer' }}
               >
                 +

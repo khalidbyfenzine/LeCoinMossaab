@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { money, initials } from '../../lib/format.js';
+import AddonPicker from './AddonPicker.jsx';
 
 function ItemImage({ item }) {
   if (item.image_url) {
@@ -35,7 +37,18 @@ function ItemImage({ item }) {
   );
 }
 
-export default function MenuGrid({ items, onAdd }) {
+export default function MenuGrid({ items, addonsByItemId, onAdd }) {
+  const [configuringItem, setConfiguringItem] = useState(null);
+
+  const handleClick = (item) => {
+    const itemAddons = addonsByItemId[item.id] ?? [];
+    if (itemAddons.length > 0) {
+      setConfiguringItem(item);
+    } else {
+      onAdd(item, []);
+    }
+  };
+
   return (
     <div className="menu-grid-container" style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
       <div
@@ -49,7 +62,7 @@ export default function MenuGrid({ items, onAdd }) {
           it.available ? (
             <button
               key={it.id}
-              onClick={() => onAdd(it)}
+              onClick={() => handleClick(it)}
               style={{
                 textAlign: 'left',
                 background: 'var(--color-surface)',
@@ -68,6 +81,11 @@ export default function MenuGrid({ items, onAdd }) {
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--color-accent)', fontWeight: 600 }}>
                 {money(it.price)}
               </div>
+              {(addonsByItemId[it.id]?.length ?? 0) > 0 && (
+                <div style={{ fontSize: 10.5, color: 'var(--color-muted)' }}>
+                  + suppléments disponibles
+                </div>
+              )}
             </button>
           ) : (
             <div
@@ -93,6 +111,18 @@ export default function MenuGrid({ items, onAdd }) {
           )
         )}
       </div>
+
+      {configuringItem && (
+        <AddonPicker
+          item={configuringItem}
+          addons={addonsByItemId[configuringItem.id] ?? []}
+          onConfirm={(selectedAddons) => {
+            onAdd(configuringItem, selectedAddons);
+            setConfiguringItem(null);
+          }}
+          onCancel={() => setConfiguringItem(null)}
+        />
+      )}
     </div>
   );
 }
