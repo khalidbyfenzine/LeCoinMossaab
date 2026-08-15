@@ -218,7 +218,7 @@ export default function App() {
       if (existing) {
         return prev.map((c) => (c.lineKey === lineKey ? { ...c, qty: c.qty + 1 } : c));
       }
-      return [...prev, { lineKey, id: item.id, name: displayName, price: unitPrice, qty: 1 }];
+      return [...prev, { lineKey, id: item.id, name: displayName, price: unitPrice, qty: 1, category: item.category }];
     });
   };
 

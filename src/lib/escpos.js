@@ -125,8 +125,24 @@ export function buildReceiptBytes({
   r.line(padLine(table ?? '', server ?? ''));
   r.line(divider());
 
+  const groups = [];
+  const groupIndexByCategory = {};
   for (const it of items) {
-    r.line(padLine(`${it.qty}x ${it.name}`, money(it.price * it.qty)));
+    const cat = it.category ?? '';
+    if (!(cat in groupIndexByCategory)) {
+      groupIndexByCategory[cat] = groups.length;
+      groups.push({ category: cat, items: [] });
+    }
+    groups[groupIndexByCategory[cat]].items.push(it);
+  }
+
+  for (const group of groups) {
+    if (group.category) {
+      r.bold(true).line(group.category.toUpperCase()).bold(false);
+    }
+    for (const it of group.items) {
+      r.line(padLine(`${it.qty}x ${it.name}`, money(it.price * it.qty)));
+    }
   }
 
   r.line(divider());
