@@ -553,7 +553,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', color: 'var(--color-text)' }}>
+    <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', color: 'var(--color-text)' }}>
       {!isLoggedIn && (
         <LoginScreen
           loginRole={loginRole}
@@ -605,7 +605,7 @@ export default function App() {
           {view === 'admin' && currentUser?.login_role === 'admin' && (
             <div className="admin-body" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
               <AdminNav adminSection={adminSection} onSelect={setAdminSection} />
-              <div className="admin-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
+              <div className="admin-content" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '28px 32px' }}>
                 {adminSection === 'dashboard' && (
                   <Dashboard
                     todayLabel={todayLabel()}

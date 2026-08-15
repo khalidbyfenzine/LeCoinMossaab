@@ -20,6 +20,8 @@ export default function AdminNav({ adminSection, onSelect }) {
         display: 'flex',
         flexDirection: 'column',
         gap: 4,
+        minHeight: 0,
+        overflowY: 'auto',
       }}
     >
       {NAV_ITEMS.map((n) => (

@@ -28,7 +28,7 @@ function ItemImage({ item }) {
         alignItems: 'center',
         justifyContent: 'center',
         fontWeight: 700,
-        fontSize: 18,
+        fontSize: 22,
         color: 'var(--color-strong)',
       }}
     >
@@ -50,12 +50,12 @@ export default function MenuGrid({ items, addonsByCategoryLabel, onAdd }) {
   };
 
   return (
-    <div className="menu-grid-container" style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+    <div className="menu-grid-container" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 20 }}>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-          gap: 12,
+          gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+          gap: 16,
         }}
       >
         {items.map((it) =>
@@ -68,7 +68,7 @@ export default function MenuGrid({ items, addonsByCategoryLabel, onAdd }) {
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
                 borderRadius: 8,
-                padding: '10px 12px 12px',
+                padding: '12px 14px 14px',
                 cursor: 'pointer',
                 boxShadow: '0 1px 0 var(--color-border-strong)',
                 display: 'flex',
@@ -77,8 +77,8 @@ export default function MenuGrid({ items, addonsByCategoryLabel, onAdd }) {
               }}
             >
               <ItemImage item={it} />
-              <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.25 }}>{it.name}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--color-accent)', fontWeight: 600 }}>
+              <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.25 }}>{it.name}</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--color-accent)', fontWeight: 600 }}>
                 {money(it.price)}
               </div>
               {(addonsByCategoryLabel[it.category]?.length ?? 0) > 0 && (
@@ -95,7 +95,7 @@ export default function MenuGrid({ items, addonsByCategoryLabel, onAdd }) {
                 background: 'var(--color-surface-dim)',
                 border: '1px solid var(--color-border)',
                 borderRadius: 8,
-                padding: '10px 12px 12px',
+                padding: '12px 14px 14px',
                 opacity: 0.55,
                 display: 'flex',
                 flexDirection: 'column',
@@ -103,7 +103,7 @@ export default function MenuGrid({ items, addonsByCategoryLabel, onAdd }) {
               }}
             >
               <ItemImage item={it} />
-              <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.25 }}>{it.name}</div>
+              <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.25 }}>{it.name}</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--color-muted)', fontWeight: 600, letterSpacing: 0.4 }}>
                 ÉPUISÉ
               </div>

@@ -11,6 +11,8 @@ export default function CategorySidebar({ categories, category, onSelectCategory
         display: 'flex',
         flexDirection: 'column',
         gap: 6,
+        minHeight: 0,
+        overflowY: 'auto',
       }}
     >
       {categories.map((c) => (
