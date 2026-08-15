@@ -8,7 +8,3 @@ export function initials(name) {
     .map((p) => p[0])
     .join('');
 }
-
-export function timeLabel(dateLike) {
-  return new Date(dateLike).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-}

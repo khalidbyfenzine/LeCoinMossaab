@@ -1,6 +1,4 @@
-import { useState } from 'react';
-import { money, timeLabel } from '../../lib/format.js';
-import ConfirmDialog from '../ConfirmDialog.jsx';
+import { money } from '../../lib/format.js';
 
 export default function OrderTicket({
   selectedTable,
@@ -10,19 +8,8 @@ export default function OrderTicket({
   subtotal,
   tax,
   total,
-  onSendToKitchen,
-  tableOrders,
-  onEditOrder,
-  onMarkPaid,
-  onCancelOrder,
+  onPrintOrder,
 }) {
-  const [orderPendingCancel, setOrderPendingCancel] = useState(null);
-
-  const confirmCancel = () => {
-    onCancelOrder(orderPendingCancel);
-    setOrderPendingCancel(null);
-  };
-
   return (
     <div
       className="order-ticket"
@@ -100,70 +87,12 @@ export default function OrderTicket({
 
       <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
         <button
-          onClick={onSendToKitchen}
+          onClick={onPrintOrder}
           style={{ flex: 1, padding: 13, borderRadius: 7, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
         >
-          Envoyer en cuisine
+          Imprimer
         </button>
       </div>
-
-      <div style={{ borderTop: '1px dashed var(--color-border-dashed)', marginTop: 14, paddingTop: 12, display: 'flex', flexDirection: 'column', minHeight: 0, flex: '1 1 130px' }}>
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Commandes envoyées — {selectedTable}</div>
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {tableOrders.length === 0 && (
-            <div style={{ color: 'var(--color-muted-2)', fontSize: 12.5, padding: '10px 0' }}>Aucune commande envoyée pour cette table.</div>
-          )}
-          {tableOrders.map((ord) => {
-            const itemCount = ord.items.reduce((sum, it) => sum + it.qty, 0);
-            const orderTotal = ord.items.reduce((sum, it) => sum + it.price * it.qty, 0);
-            const summary = `${itemCount} article${itemCount === 1 ? '' : 's'} — ${ord.items.map((it) => it.name).join(', ')}`;
-            return (
-              <div
-                key={ord.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', borderRadius: 7, padding: '9px 11px' }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 600 }}>{summary}</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--color-muted)' }}>
-                    {timeLabel(ord.created_at)} · {money(orderTotal)}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <button
-                    onClick={() => onMarkPaid(ord.id)}
-                    style={{ padding: '6px 11px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
-                  >
-                    Marquer payé
-                  </button>
-                  <button
-                    onClick={() => onEditOrder(ord.id)}
-                    style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-accent)', background: 'transparent', color: 'var(--color-accent)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
-                  >
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => setOrderPendingCancel(ord.id)}
-                    style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-muted)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {orderPendingCancel !== null && (
-        <ConfirmDialog
-          title="Annuler cette commande ?"
-          message="Cette action est définitive et supprimera la commande."
-          confirmLabel="Annuler la commande"
-          cancelLabel="Retour"
-          onConfirm={confirmCancel}
-          onCancel={() => setOrderPendingCancel(null)}
-        />
-      )}
     </div>
   );
 }

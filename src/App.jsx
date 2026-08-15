@@ -215,11 +215,11 @@ export default function App() {
   const decQty = (id) =>
     setCart((prev) => prev.map((c) => (c.id === id ? { ...c, qty: c.qty - 1 } : c)).filter((c) => c.qty > 0));
 
-  const sendToKitchen = async () => {
+  const printOrder = async () => {
     if (cart.length === 0 || !selectedTable) return;
     const { data: newOrder, error: orderErr } = await supabase
       .from('orders')
-      .insert({ table_label: selectedTable, server_name: currentUser.name, status: 'open', covers: 1 })
+      .insert({ table_label: selectedTable, server_name: currentUser.name, status: 'paid', covers: 1 })
       .select()
       .single();
     if (orderErr) return;
@@ -240,47 +240,27 @@ export default function App() {
       },
       ...prev,
     ]);
-    setCart([]);
-  };
 
-  const editOrder = async (orderId) => {
-    const order = orders.find((o) => o.id === orderId);
-    if (!order) return;
-    const { error } = await supabase.from('orders').delete().eq('id', orderId);
-    if (error) return;
-    setCart(order.items.map((it) => ({ id: it.menu_item_id, name: it.name, price: it.price, qty: it.qty })));
-    setSelectedTable(order.table_label);
-    setOrders((prev) => prev.filter((o) => o.id !== orderId));
-  };
-
-  const cancelOrder = async (orderId) => {
-    const { error } = await supabase.from('orders').delete().eq('id', orderId);
-    if (error) return;
-    setOrders((prev) => prev.filter((o) => o.id !== orderId));
-  };
-
-  const markOrderPaid = async (orderId) => {
-    const order = orders.find((o) => o.id === orderId);
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'paid' } : o)));
-    await supabase.from('orders').update({ status: 'paid' }).eq('id', orderId);
-
-    if (order) {
-      const total = order.items.reduce((sum, it) => sum + it.price * it.qty, 0);
-      const { data, error } = await supabase
-        .from('caisse_transactions')
-        .insert({
-          type: 'in',
-          amount: total,
-          description: `Commande ${order.table_label}`,
-          order_id: orderId,
-          created_by: currentUser?.name ?? null,
-        })
-        .select()
-        .single();
-      if (!error) {
-        setCaisseTransactions((prev) => [{ ...data, amount: Number(data.amount) }, ...prev]);
-      }
+    const total = cart.reduce((sum, c) => sum + c.price * c.qty, 0);
+    const { data: txData, error: txErr } = await supabase
+      .from('caisse_transactions')
+      .insert({
+        type: 'in',
+        amount: total,
+        description: `Commande ${selectedTable}`,
+        order_id: newOrder.id,
+        created_by: currentUser?.name ?? null,
+      })
+      .select()
+      .single();
+    if (!txErr && txData) {
+      setCaisseTransactions((prev) => [{ ...txData, amount: Number(txData.amount) }, ...prev]);
     }
+
+    setCart([]);
+
+    // Receipt printing itself isn't implemented yet — the order is finalized as paid above,
+    // but no print action fires until the printer/receipt spec is provided.
   };
 
   const toggleAvailable = async (id) => {
@@ -387,11 +367,6 @@ export default function App() {
   const total = subtotal + tax;
 
   const todaysOrders = useMemo(() => orders.filter((o) => isToday(o.created_at)), [orders]);
-
-  const tableOrders = useMemo(
-    () => orders.filter((o) => o.table_label === selectedTable && o.status === 'open'),
-    [orders, selectedTable]
-  );
 
   const tableLabels = useMemo(() => tables.map((t) => t.label), [tables]);
   const categoryLabels = useMemo(() => categories.map((c) => c.label), [categories]);
@@ -563,11 +538,7 @@ export default function App() {
                 subtotal={subtotal}
                 tax={tax}
                 total={total}
-                onSendToKitchen={sendToKitchen}
-                tableOrders={tableOrders}
-                onEditOrder={editOrder}
-                onMarkPaid={markOrderPaid}
-                onCancelOrder={cancelOrder}
+                onPrintOrder={printOrder}
               />
             </div>
           )}
