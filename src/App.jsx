@@ -253,6 +253,12 @@ export default function App() {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
   };
 
+  const cancelOrder = async (orderId) => {
+    const { error } = await supabase.from('orders').delete().eq('id', orderId);
+    if (error) return;
+    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+  };
+
   const markOrderPaid = async (orderId) => {
     const order = orders.find((o) => o.id === orderId);
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'paid' } : o)));
@@ -561,6 +567,7 @@ export default function App() {
                 tableOrders={tableOrders}
                 onEditOrder={editOrder}
                 onMarkPaid={markOrderPaid}
+                onCancelOrder={cancelOrder}
               />
             </div>
           )}

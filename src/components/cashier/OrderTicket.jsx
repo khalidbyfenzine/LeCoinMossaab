@@ -12,7 +12,13 @@ export default function OrderTicket({
   tableOrders,
   onEditOrder,
   onMarkPaid,
+  onCancelOrder,
 }) {
+  const cancelWithConfirm = (id) => {
+    if (window.confirm('Annuler cette commande ? Cette action est définitive.')) {
+      onCancelOrder(id);
+    }
+  };
   return (
     <div
       className="order-ticket"
@@ -130,6 +136,12 @@ export default function OrderTicket({
                     style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-accent)', background: 'transparent', color: 'var(--color-accent)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
                   >
                     Modifier
+                  </button>
+                  <button
+                    onClick={() => cancelWithConfirm(ord.id)}
+                    style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-muted)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Supprimer
                   </button>
                 </div>
               </div>
