@@ -37,11 +37,11 @@ function ItemImage({ item }) {
   );
 }
 
-export default function MenuGrid({ items, addonsByItemId, onAdd }) {
+export default function MenuGrid({ items, addonsByCategoryLabel, onAdd }) {
   const [configuringItem, setConfiguringItem] = useState(null);
 
   const handleClick = (item) => {
-    const itemAddons = addonsByItemId[item.id] ?? [];
+    const itemAddons = addonsByCategoryLabel[item.category] ?? [];
     if (itemAddons.length > 0) {
       setConfiguringItem(item);
     } else {
@@ -81,7 +81,7 @@ export default function MenuGrid({ items, addonsByItemId, onAdd }) {
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--color-accent)', fontWeight: 600 }}>
                 {money(it.price)}
               </div>
-              {(addonsByItemId[it.id]?.length ?? 0) > 0 && (
+              {(addonsByCategoryLabel[it.category]?.length ?? 0) > 0 && (
                 <div style={{ fontSize: 10.5, color: 'var(--color-muted)' }}>
                   + suppléments disponibles
                 </div>
@@ -115,7 +115,7 @@ export default function MenuGrid({ items, addonsByItemId, onAdd }) {
       {configuringItem && (
         <AddonPicker
           item={configuringItem}
-          addons={addonsByItemId[configuringItem.id] ?? []}
+          addons={addonsByCategoryLabel[configuringItem.category] ?? []}
           onConfirm={(selectedAddons) => {
             onAdd(configuringItem, selectedAddons);
             setConfiguringItem(null);

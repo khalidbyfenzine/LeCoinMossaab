@@ -51,7 +51,7 @@ export default function App() {
   const [tables, setTables] = useState([]);
   const [categories, setCategories] = useState([]);
   const [caisseTransactions, setCaisseTransactions] = useState([]);
-  const [menuItemAddons, setMenuItemAddons] = useState([]);
+  const [categoryAddons, setCategoryAddons] = useState([]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -89,7 +89,7 @@ export default function App() {
           supabase.from('tables').select('*').order('id', { ascending: true }),
           supabase.from('categories').select('*').order('id', { ascending: true }),
           supabase.from('caisse_transactions').select('*').order('created_at', { ascending: false }),
-          supabase.from('menu_item_addons').select('*'),
+          supabase.from('category_addons').select('*'),
         ]);
         if (staffErr) throw staffErr;
         if (menuErr) throw menuErr;
@@ -108,7 +108,7 @@ export default function App() {
         setCaisseTransactions(
           (caisseData ?? []).map((t) => ({ ...t, amount: Number(t.amount) }))
         );
-        setMenuItemAddons((addonData ?? []).map((a) => ({ ...a, price: Number(a.price) })));
+        setCategoryAddons((addonData ?? []).map((a) => ({ ...a, price: Number(a.price) })));
         setOrders(
           (orderData ?? []).map((o) => ({
             id: o.id,
@@ -305,20 +305,20 @@ export default function App() {
     setMenuItems((prev) => prev.filter((m) => m.id !== id));
   };
 
-  const addMenuItemAddon = async (menuItemId, { name, price }) => {
+  const addCategoryAddon = async (categoryId, { name, price }) => {
     const { data, error } = await supabase
-      .from('menu_item_addons')
-      .insert({ menu_item_id: menuItemId, name, price })
+      .from('category_addons')
+      .insert({ category_id: categoryId, name, price })
       .select()
       .single();
     if (error) return;
-    setMenuItemAddons((prev) => [...prev, { ...data, price: Number(data.price) }]);
+    setCategoryAddons((prev) => [...prev, { ...data, price: Number(data.price) }]);
   };
 
-  const deleteMenuItemAddon = async (addonId) => {
-    const { error } = await supabase.from('menu_item_addons').delete().eq('id', addonId);
+  const deleteCategoryAddon = async (addonId) => {
+    const { error } = await supabase.from('category_addons').delete().eq('id', addonId);
     if (error) return;
-    setMenuItemAddons((prev) => prev.filter((a) => a.id !== addonId));
+    setCategoryAddons((prev) => prev.filter((a) => a.id !== addonId));
   };
 
   const toggleStaffClock = async (id) => {
@@ -370,6 +370,7 @@ export default function App() {
     const { error } = await supabase.from('categories').delete().eq('id', id);
     if (error) return;
     setCategories((prev) => prev.filter((c) => c.id !== id));
+    setCategoryAddons((prev) => prev.filter((a) => a.category_id !== id));
   };
 
   const updateCategory = async (id, newLabel) => {
@@ -403,13 +404,21 @@ export default function App() {
 
   const filteredItems = useMemo(() => menuItems.filter((m) => m.category === category), [menuItems, category]);
 
-  const addonsByItemId = useMemo(() => {
+  const addonsByCategoryId = useMemo(() => {
     const map = {};
-    for (const a of menuItemAddons) {
-      (map[a.menu_item_id] ??= []).push(a);
+    for (const a of categoryAddons) {
+      (map[a.category_id] ??= []).push(a);
     }
     return map;
-  }, [menuItemAddons]);
+  }, [categoryAddons]);
+
+  const addonsByCategoryLabel = useMemo(() => {
+    const map = {};
+    for (const c of categories) {
+      map[c.label] = addonsByCategoryId[c.id] ?? [];
+    }
+    return map;
+  }, [categories, addonsByCategoryId]);
 
   const subtotal = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.qty, 0), [cart]);
   const tax = subtotal * TAX_RATE;
@@ -578,7 +587,7 @@ export default function App() {
           {view === 'cashier' && (
             <div className="cashier-body" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
               <CategorySidebar categories={categoryLabels} category={category} onSelectCategory={setCategory} />
-              <MenuGrid items={filteredItems} addonsByItemId={addonsByItemId} onAdd={addToCart} />
+              <MenuGrid items={filteredItems} addonsByCategoryLabel={addonsByCategoryLabel} onAdd={addToCart} />
               <OrderTicket
                 selectedTable={selectedTable}
                 cart={cart}
@@ -631,21 +640,21 @@ export default function App() {
                   <MenuItemsAdmin
                     items={menuItems}
                     categories={categoryLabels}
-                    addonsByItemId={addonsByItemId}
                     onToggle={toggleAvailable}
                     onAdd={addMenuItem}
                     onUpdate={updateMenuItem}
                     onDelete={deleteMenuItem}
-                    onAddAddon={addMenuItemAddon}
-                    onDeleteAddon={deleteMenuItemAddon}
                   />
                 )}
                 {adminSection === 'categories' && (
                   <CategoriesAdmin
                     categories={categories}
+                    addonsByCategoryId={addonsByCategoryId}
                     onAdd={addCategory}
                     onRemove={removeCategory}
                     onUpdate={updateCategory}
+                    onAddAddon={addCategoryAddon}
+                    onDeleteAddon={deleteCategoryAddon}
                   />
                 )}
                 {adminSection === 'tables' && <TablesAdmin tables={tables} onAdd={addTable} onRemove={removeTable} />}

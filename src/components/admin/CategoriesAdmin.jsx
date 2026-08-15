@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { money } from '../../lib/format.js';
 
 function fieldStyle() {
   return {
@@ -10,7 +11,81 @@ function fieldStyle() {
   };
 }
 
-export default function CategoriesAdmin({ categories, onAdd, onRemove, onUpdate }) {
+function AddonsEditor({ addons, onAdd, onDelete }) {
+  const [draftName, setDraftName] = useState('');
+  const [draftPrice, setDraftPrice] = useState('');
+
+  const submitAddon = (e) => {
+    e.preventDefault();
+    const price = Number(draftPrice);
+    if (!draftName.trim() || !(price > 0)) return;
+    onAdd(draftName.trim(), price);
+    setDraftName('');
+    setDraftPrice('');
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px dashed var(--color-border)', paddingTop: 10, marginTop: 2 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        Suppléments — s'appliquent à tous les articles de cette catégorie
+      </div>
+      {addons.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {addons.map((a) => (
+            <span
+              key={a.id}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 12.5,
+                background: 'var(--color-surface-dim)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 20,
+                padding: '4px 6px 4px 10px',
+              }}
+            >
+              {a.name}
+              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)', fontWeight: 600 }}>+{money(a.price)}</span>
+              <button
+                type="button"
+                onClick={() => onDelete(a.id)}
+                style={{ width: 16, height: 16, borderRadius: '50%', border: 'none', background: 'var(--color-border)', fontSize: 10, lineHeight: 1, cursor: 'pointer', color: 'var(--color-strong)' }}
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <form onSubmit={submitAddon} className="admin-form-flex" style={{ display: 'flex', gap: 6, maxWidth: 360 }}>
+        <input
+          value={draftName}
+          onChange={(e) => setDraftName(e.target.value)}
+          placeholder="Nom (ex. Frites)"
+          style={{ ...fieldStyle(), flex: 1.4, padding: '6px 8px', fontSize: 12.5 }}
+        />
+        <input
+          value={draftPrice}
+          onChange={(e) => setDraftPrice(e.target.value)}
+          placeholder="+MAD"
+          type="number"
+          min="0"
+          step="0.5"
+          style={{ ...fieldStyle(), flex: 1, padding: '6px 8px', fontSize: 12.5 }}
+        />
+        <button
+          type="submit"
+          style={{ padding: '6px 12px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+        >
+          Ajouter
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default function CategoriesAdmin({ categories, addonsByCategoryId, onAdd, onRemove, onUpdate, onAddAddon, onDeleteAddon }) {
   const [newLabel, setNewLabel] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editLabel, setEditLabel] = useState('');
@@ -112,48 +187,55 @@ export default function CategoriesAdmin({ categories, onAdd, onRemove, onUpdate 
           ) : (
             <div
               key={c.id}
-              className="admin-list-row"
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: 14,
+                flexDirection: 'column',
+                gap: 10,
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
                 borderRadius: 8,
                 padding: '13px 16px',
               }}
             >
-              <div style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>{c.label}</div>
-              <button
-                onClick={() => startEdit(c)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 6,
-                  border: '1px solid var(--color-border)',
-                  background: 'transparent',
-                  color: 'var(--color-strong)',
-                  fontWeight: 600,
-                  fontSize: 12.5,
-                  cursor: 'pointer',
-                }}
-              >
-                Modifier
-              </button>
-              <button
-                onClick={() => onRemove(c.id)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 6,
-                  border: '1px solid var(--color-accent)',
-                  background: 'transparent',
-                  color: 'var(--color-accent)',
-                  fontWeight: 600,
-                  fontSize: 12.5,
-                  cursor: 'pointer',
-                }}
-              >
-                Supprimer
-              </button>
+              <div className="admin-list-row" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>{c.label}</div>
+                <button
+                  onClick={() => startEdit(c)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    border: '1px solid var(--color-border)',
+                    background: 'transparent',
+                    color: 'var(--color-strong)',
+                    fontWeight: 600,
+                    fontSize: 12.5,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Modifier
+                </button>
+                <button
+                  onClick={() => onRemove(c.id)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    border: '1px solid var(--color-accent)',
+                    background: 'transparent',
+                    color: 'var(--color-accent)',
+                    fontWeight: 600,
+                    fontSize: 12.5,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Supprimer
+                </button>
+              </div>
+
+              <AddonsEditor
+                addons={addonsByCategoryId[c.id] ?? []}
+                onAdd={(name, price) => onAddAddon(c.id, { name, price })}
+                onDelete={onDeleteAddon}
+              />
             </div>
           )
         )}
