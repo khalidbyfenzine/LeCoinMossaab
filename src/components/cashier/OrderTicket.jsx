@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { money, timeLabel } from '../../lib/format.js';
+import ConfirmDialog from '../ConfirmDialog.jsx';
 
 export default function OrderTicket({
   selectedTable,
@@ -14,11 +16,13 @@ export default function OrderTicket({
   onMarkPaid,
   onCancelOrder,
 }) {
-  const cancelWithConfirm = (id) => {
-    if (window.confirm('Annuler cette commande ? Cette action est définitive.')) {
-      onCancelOrder(id);
-    }
+  const [orderPendingCancel, setOrderPendingCancel] = useState(null);
+
+  const confirmCancel = () => {
+    onCancelOrder(orderPendingCancel);
+    setOrderPendingCancel(null);
   };
+
   return (
     <div
       className="order-ticket"
@@ -138,7 +142,7 @@ export default function OrderTicket({
                     Modifier
                   </button>
                   <button
-                    onClick={() => cancelWithConfirm(ord.id)}
+                    onClick={() => setOrderPendingCancel(ord.id)}
                     style={{ padding: '6px 11px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-muted)', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
                   >
                     Supprimer
@@ -149,6 +153,17 @@ export default function OrderTicket({
           })}
         </div>
       </div>
+
+      {orderPendingCancel !== null && (
+        <ConfirmDialog
+          title="Annuler cette commande ?"
+          message="Cette action est définitive et supprimera la commande."
+          confirmLabel="Annuler la commande"
+          cancelLabel="Retour"
+          onConfirm={confirmCancel}
+          onCancel={() => setOrderPendingCancel(null)}
+        />
+      )}
     </div>
   );
 }
