@@ -17,6 +17,7 @@ create table if not exists menu_items (
   price numeric(10, 2) not null,
   available boolean not null default true
 );
+alter table menu_items add column if not exists image_url text;
 
 create table if not exists orders (
   id bigint generated always as identity primary key,
@@ -158,6 +159,24 @@ grant select, insert, delete on tables to anon, authenticated;
 grant select, insert, delete on categories to anon, authenticated;
 grant select, insert, delete on caisse_transactions to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
+
+-- Storage bucket for menu item photos, uploaded by admin from the Articles du menu screen.
+insert into storage.buckets (id, name, public)
+values ('menu-images', 'menu-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "menu-images public read" on storage.objects;
+create policy "menu-images public read" on storage.objects
+  for select using (bucket_id = 'menu-images');
+drop policy if exists "menu-images insert" on storage.objects;
+create policy "menu-images insert" on storage.objects
+  for insert with check (bucket_id = 'menu-images');
+drop policy if exists "menu-images update" on storage.objects;
+create policy "menu-images update" on storage.objects
+  for update using (bucket_id = 'menu-images');
+drop policy if exists "menu-images delete" on storage.objects;
+create policy "menu-images delete" on storage.objects
+  for delete using (bucket_id = 'menu-images');
 
 -- Seed data
 

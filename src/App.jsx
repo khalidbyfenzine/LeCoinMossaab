@@ -291,11 +291,11 @@ export default function App() {
     await supabase.from('menu_items').update({ available: nextAvailable }).eq('id', id);
   };
 
-  const addMenuItem = async ({ name, category, price }) => {
+  const addMenuItem = async ({ name, category, price, image_url }) => {
     const id = crypto.randomUUID();
     const { data, error } = await supabase
       .from('menu_items')
-      .insert({ id, name, category, price, available: true })
+      .insert({ id, name, category, price, available: true, image_url: image_url ?? null })
       .select()
       .single();
     if (error) return;

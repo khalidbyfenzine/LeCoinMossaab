@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { money } from '../../lib/format.js';
+import { money, initials } from '../../lib/format.js';
+import { uploadMenuImage } from '../../lib/uploadImage.js';
 
-const EMPTY_FORM = { name: '', category: '', price: '' };
+const EMPTY_FORM = { name: '', category: '', price: '', image_url: '' };
 
 function fieldStyle() {
   return {
@@ -13,34 +14,96 @@ function fieldStyle() {
   };
 }
 
+function ImagePicker({ imageUrl, uploading, error, onSelectFile, label }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 8,
+          border: '1px dashed var(--color-border)',
+          background: imageUrl ? `center / cover no-repeat url(${imageUrl})` : 'var(--color-surface-dim)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          overflow: 'hidden',
+          flex: '0 0 auto',
+        }}
+        title={label}
+      >
+        {!imageUrl && !uploading && <span style={{ fontSize: 18, color: 'var(--color-muted)' }}>+</span>}
+        {uploading && <span style={{ fontSize: 10, color: 'var(--color-muted)' }}>…</span>}
+        <input type="file" accept="image/*" onChange={onSelectFile} style={{ display: 'none' }} />
+      </label>
+      {error && <div style={{ fontSize: 10.5, color: 'var(--color-accent)', maxWidth: 90 }}>{error}</div>}
+    </div>
+  );
+}
+
 export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onUpdate, onDelete }) {
   const [newForm, setNewForm] = useState({ ...EMPTY_FORM, category: categories[0] ?? '' });
+  const [newUploading, setNewUploading] = useState(false);
+  const [newImageError, setNewImageError] = useState(null);
+
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(EMPTY_FORM);
+  const [editUploading, setEditUploading] = useState(false);
+  const [editImageError, setEditImageError] = useState(null);
+
+  const handleImageChange = async (e, isEdit) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const setForm = isEdit ? setEditForm : setNewForm;
+    const setUploading = isEdit ? setEditUploading : setNewUploading;
+    const setError = isEdit ? setEditImageError : setNewImageError;
+
+    setError(null);
+    setUploading(true);
+    try {
+      const url = await uploadMenuImage(file);
+      setForm((f) => ({ ...f, image_url: url }));
+    } catch (err) {
+      setError(err.message ?? 'Échec du téléversement.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submitAdd = (e) => {
     e.preventDefault();
     const price = Number(newForm.price);
     if (!newForm.name.trim() || !newForm.category || !(price > 0)) return;
-    onAdd({ name: newForm.name.trim(), category: newForm.category, price });
+    onAdd({ name: newForm.name.trim(), category: newForm.category, price, image_url: newForm.image_url || null });
     setNewForm({ ...EMPTY_FORM, category: newForm.category });
+    setNewImageError(null);
   };
 
   const startEdit = (item) => {
     setEditingId(item.id);
-    setEditForm({ name: item.name, category: item.category, price: String(item.price) });
+    setEditForm({ name: item.name, category: item.category, price: String(item.price), image_url: item.image_url ?? '' });
+    setEditImageError(null);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditForm(EMPTY_FORM);
+    setEditImageError(null);
   };
 
   const submitEdit = (e) => {
     e.preventDefault();
     const price = Number(editForm.price);
     if (!editForm.name.trim() || !editForm.category || !(price > 0)) return;
-    onUpdate(editingId, { name: editForm.name.trim(), category: editForm.category, price });
+    onUpdate(editingId, {
+      name: editForm.name.trim(),
+      category: editForm.category,
+      price,
+      image_url: editForm.image_url || null,
+    });
     cancelEdit();
   };
 
@@ -48,14 +111,21 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
     <div>
       <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>Articles du menu</div>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 22 }}>
-        Ajoutez, modifiez, retirez des articles ou basculez leur disponibilité.
+        Ajoutez, modifiez, retirez des articles, basculez leur disponibilité ou ajoutez une photo.
       </div>
 
       <form
         onSubmit={submitAdd}
         className="admin-form-grid"
-        style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 0.8fr auto', gap: 8, marginBottom: 26, alignItems: 'center' }}
+        style={{ display: 'grid', gridTemplateColumns: 'auto 1.4fr 1fr 0.8fr auto', gap: 8, marginBottom: 26, alignItems: 'center' }}
       >
+        <ImagePicker
+          imageUrl={newForm.image_url}
+          uploading={newUploading}
+          error={newImageError}
+          onSelectFile={(e) => handleImageChange(e, false)}
+          label="Ajouter une photo"
+        />
         <input
           value={newForm.name}
           onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
@@ -84,7 +154,8 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
         />
         <button
           type="submit"
-          style={{ padding: '9px 16px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+          disabled={newUploading}
+          style={{ padding: '9px 16px', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: newUploading ? 'not-allowed' : 'pointer', opacity: newUploading ? 0.6 : 1 }}
         >
           Ajouter
         </button>
@@ -112,6 +183,13 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                       gap: 8,
                     }}
                   >
+                    <ImagePicker
+                      imageUrl={editForm.image_url}
+                      uploading={editUploading}
+                      error={editImageError}
+                      onSelectFile={(e) => handleImageChange(e, true)}
+                      label="Changer la photo"
+                    />
                     <input
                       value={editForm.name}
                       onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
@@ -139,7 +217,8 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button
                         type="submit"
-                        style={{ flex: 1, padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}
+                        disabled={editUploading}
+                        style={{ flex: 1, padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: editUploading ? 'not-allowed' : 'pointer', opacity: editUploading ? 0.6 : 1 }}
                       >
                         Enregistrer
                       </button>
@@ -166,6 +245,36 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                       opacity: m.available ? 1 : 0.6,
                     }}
                   >
+                    {m.image_url ? (
+                      <div
+                        style={{
+                          width: '100%',
+                          aspectRatio: '1 / 1',
+                          borderRadius: 6,
+                          backgroundImage: `url(${m.image_url})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          aspectRatio: '1 / 1',
+                          borderRadius: 6,
+                          background: 'var(--color-avatar-bg)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: 20,
+                          color: 'var(--color-strong)',
+                        }}
+                      >
+                        {initials(m.name)}
+                      </div>
+                    )}
+
                     <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.25 }}>{m.name}</div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--color-accent)', fontWeight: 600 }}>
                       {money(m.price)}
