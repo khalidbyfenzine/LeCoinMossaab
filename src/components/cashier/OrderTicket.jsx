@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { money } from '../../lib/format.js';
 
 export default function OrderTicket({
@@ -10,6 +11,19 @@ export default function OrderTicket({
   total,
   onPrintOrder,
 }) {
+  const [amountReceived, setAmountReceived] = useState('');
+
+  useEffect(() => {
+    setAmountReceived('');
+  }, [selectedTable]);
+
+  useEffect(() => {
+    if (cart.length === 0) setAmountReceived('');
+  }, [cart.length]);
+
+  const receivedNum = Number(amountReceived) || 0;
+  const changeDue = receivedNum - total;
+
   return (
     <div
       className="order-ticket"
@@ -83,6 +97,46 @@ export default function OrderTicket({
           <span>Total</span>
           <span>{money(total)}</span>
         </div>
+      </div>
+
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <label style={{ fontSize: 13, color: 'var(--color-muted)' }}>Montant reçu</label>
+          <input
+            type="number"
+            min="0"
+            step="0.5"
+            value={amountReceived}
+            onChange={(e) => setAmountReceived(e.target.value)}
+            placeholder={money(total)}
+            style={{
+              width: 120,
+              padding: '7px 10px',
+              borderRadius: 6,
+              border: '1px solid var(--color-border)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 13.5,
+              textAlign: 'right',
+            }}
+          />
+        </div>
+        {receivedNum > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 14,
+              fontWeight: 700,
+              color: changeDue >= 0 ? 'var(--color-success-text)' : 'var(--color-accent)',
+            }}
+          >
+            <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-muted)', fontFamily: 'var(--font-sans)' }}>
+              {changeDue >= 0 ? 'Monnaie à rendre' : 'Montant manquant'}
+            </span>
+            <span>{money(Math.abs(changeDue))}</span>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
