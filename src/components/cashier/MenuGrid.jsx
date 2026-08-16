@@ -10,9 +10,7 @@ function ItemImage({ item }) {
           width: '100%',
           aspectRatio: '4 / 3',
           borderRadius: 6,
-          backgroundImage: `url(${item.image_url})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background: `var(--color-surface-dim) center / contain no-repeat url(${item.image_url})`,
         }}
       />
     );

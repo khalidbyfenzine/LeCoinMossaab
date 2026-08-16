@@ -23,7 +23,7 @@ function ImagePicker({ imageUrl, uploading, error, onSelectFile, label }) {
           height: 44,
           borderRadius: 8,
           border: '1px dashed var(--color-border)',
-          background: imageUrl ? `center / cover no-repeat url(${imageUrl})` : 'var(--color-surface-dim)',
+          background: imageUrl ? `var(--color-surface-dim) center / contain no-repeat url(${imageUrl})` : 'var(--color-surface-dim)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -279,9 +279,7 @@ export default function MenuItemsAdmin({ items, categories, onToggle, onAdd, onU
                           width: '100%',
                           aspectRatio: '1 / 1',
                           borderRadius: 6,
-                          backgroundImage: `url(${m.image_url})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
+                          background: `var(--color-surface-dim) center / contain no-repeat url(${m.image_url})`,
                         }}
                       />
                     ) : (
