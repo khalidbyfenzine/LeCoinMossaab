@@ -15,8 +15,6 @@ import TablesAdmin from './components/admin/TablesAdmin.jsx';
 import CategoriesAdmin from './components/admin/CategoriesAdmin.jsx';
 import StaffAdmin from './components/admin/StaffAdmin.jsx';
 
-const TAX_RATE = 0.0825;
-
 function todayLabel() {
   return new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
@@ -275,6 +273,57 @@ export default function App() {
     return { id: newOrder.id, createdAt: newOrder.created_at };
   };
 
+  // items: current edited line list for this order, each { id, qty }; qty <= 0 removes the line.
+  const updateOrder = async (id, { table_label, server_name, status, items }) => {
+    const { error: orderErr } = await supabase
+      .from('orders')
+      .update({ table_label, server_name, status })
+      .eq('id', id);
+    if (orderErr) throw orderErr;
+
+    const toRemove = items.filter((it) => it.qty <= 0).map((it) => it.id);
+    const toKeep = items.filter((it) => it.qty > 0);
+
+    if (toRemove.length > 0) {
+      const { error } = await supabase.from('order_items').delete().in('id', toRemove);
+      if (error) throw error;
+    }
+    for (const it of toKeep) {
+      const { error } = await supabase.from('order_items').update({ qty: it.qty }).eq('id', it.id);
+      if (error) throw error;
+    }
+
+    let updatedItems;
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id !== id) return o;
+        const keepQtyById = new Map(toKeep.map((it) => [it.id, it.qty]));
+        updatedItems = o.items
+          .filter((it) => !toRemove.includes(it.id))
+          .map((it) => (keepQtyById.has(it.id) ? { ...it, qty: keepQtyById.get(it.id) } : it));
+        return { ...o, table_label, server_name, status, items: updatedItems };
+      })
+    );
+
+    // Keep the linked caisse entry (if any) in sync with the corrected total.
+    const newTotal = (updatedItems ?? []).reduce((sum, it) => sum + it.price * it.qty, 0);
+    const linkedTx = caisseTransactions.find((t) => t.order_id === id);
+    if (linkedTx) {
+      const { error } = await supabase.from('caisse_transactions').update({ amount: newTotal }).eq('id', linkedTx.id);
+      if (!error) {
+        setCaisseTransactions((prev) => prev.map((t) => (t.id === linkedTx.id ? { ...t, amount: newTotal } : t)));
+      }
+    }
+  };
+
+  const deleteOrder = async (id) => {
+    await supabase.from('caisse_transactions').delete().eq('order_id', id);
+    const { error } = await supabase.from('orders').delete().eq('id', id);
+    if (error) return;
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+    setCaisseTransactions((prev) => prev.filter((t) => t.order_id !== id));
+  };
+
   const toggleAvailable = async (id) => {
     const item = menuItems.find((m) => m.id === id);
     if (!item) return;
@@ -421,9 +470,7 @@ export default function App() {
     return map;
   }, [categories, addonsByCategoryId]);
 
-  const subtotal = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.qty, 0), [cart]);
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax;
+  const total = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.qty, 0), [cart]);
 
   const todaysOrders = useMemo(() => orders.filter((o) => isToday(o.created_at)), [orders]);
 
@@ -503,6 +550,7 @@ export default function App() {
           id: o.id,
           table: o.table_label,
           server: o.server_name,
+          status: o.status,
           dateDisplay: new Date(o.created_at).toLocaleString('fr-FR', {
             day: 'numeric',
             month: 'short',
@@ -512,6 +560,7 @@ export default function App() {
           itemsLabel: `${itemCount} article${itemCount === 1 ? '' : 's'}`,
           totalDisplay: money(orderTotal),
           paid: o.status === 'paid',
+          items: o.items,
         };
       });
   }, [orders, ordersFrom, ordersTo, ordersStatusFilter]);
@@ -594,8 +643,6 @@ export default function App() {
                 cart={cart}
                 onInc={incQty}
                 onDec={decQty}
-                subtotal={subtotal}
-                tax={tax}
                 total={total}
                 onFinalizeOrder={finalizeOrder}
                 serverName={currentUser?.name}
@@ -621,12 +668,15 @@ export default function App() {
                 {adminSection === 'orders' && (
                   <OrdersAdmin
                     orders={filteredOrders}
+                    tables={tableLabels}
                     ordersFrom={ordersFrom}
                     ordersTo={ordersTo}
                     statusFilter={ordersStatusFilter}
                     onFromChange={setOrdersFrom}
                     onToChange={setOrdersTo}
                     onStatusFilterChange={setOrdersStatusFilter}
+                    onUpdate={updateOrder}
+                    onDelete={deleteOrder}
                   />
                 )}
                 {adminSection === 'caisse' && (

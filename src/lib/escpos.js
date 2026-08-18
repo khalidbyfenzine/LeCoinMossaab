@@ -103,8 +103,6 @@ export function buildReceiptBytes({
   table,
   server,
   items,
-  subtotal,
-  tax,
   total,
   amountReceived,
   changeDue,
@@ -146,8 +144,6 @@ export function buildReceiptBytes({
   }
 
   r.line(divider());
-  r.line(padLine('Sous-total', money(subtotal)));
-  r.line(padLine('Taxe', money(tax)));
   r.bold(true).line(padLine('TOTAL', money(total))).bold(false);
 
   if (amountReceived > 0) {

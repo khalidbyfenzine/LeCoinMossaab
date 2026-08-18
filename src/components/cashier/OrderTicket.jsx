@@ -8,8 +8,6 @@ export default function OrderTicket({
   cart,
   onInc,
   onDec,
-  subtotal,
-  tax,
   total,
   onFinalizeOrder,
   serverName,
@@ -44,7 +42,7 @@ export default function OrderTicket({
       // No printer paired/available — the sale still finalizes below.
     }
 
-    const receiptData = { table: selectedTable, server: serverName, items: cart, subtotal, tax, total, amountReceived: receivedNum, changeDue };
+    const receiptData = { table: selectedTable, server: serverName, items: cart, total, amountReceived: receivedNum, changeDue };
 
     let orderInfo;
     try {
@@ -132,15 +130,7 @@ export default function OrderTicket({
       </div>
 
       <div style={{ borderTop: '1px dashed var(--color-border-dashed)', marginTop: 12, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 5, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-muted)' }}>
-          <span>Sous-total</span>
-          <span>{money(subtotal)}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-muted)' }}>
-          <span>Taxe</span>
-          <span>{money(tax)}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17, fontWeight: 700, color: 'var(--color-text)', marginTop: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 17, fontWeight: 700, color: 'var(--color-text)' }}>
           <span>Total</span>
           <span>{money(total)}</span>
         </div>
